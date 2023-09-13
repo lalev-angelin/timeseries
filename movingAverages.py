@@ -28,7 +28,7 @@ def movingAverage(nparr, window):
         masum = 0
         for j in range(i, i+window):
             masum = masum + nparr[j]
-        print(i, masum)
+#        print(i, masum)
         ret[i]=masum/window
         
     return ret
@@ -40,6 +40,42 @@ def movingAverage1(a, n=3):
     ret = np.cumsum(a, dtype=float)
     ret[n:] = ret[n:] - ret[:-n]
     return ret[n - 1:] / n
+
+
+#####################################################
+# 
+def movingAverageWithPad(data, window, 
+                         num_predictions):
+
+    ret = movingAverage(data, window)
+    print(data)
+    
+    remaining_predictions = num_predictions-1
+    start_position = len(ret)
+    ret = np.pad(ret, (0, remaining_predictions))
+    print(ret)
+
+    for c in (start_position, len(ret)-1):
+        print(ret[c])        
+        
+
+    sys.exit(0)
+    
+    for i in range(0, window):
+        sm = 0
+        count = 0
+        for j in range (0, i):
+            sm = sm + data[j] 
+    
+    
+    
+    for counter in range(2, len(data)):
+        ret[counter]=data[counter]
+        
+    
+test = np.array([0,1,2,3,4,5,6,7,8,9])
+movingAverageWithPad(test, 3, 6)    
+sys.exit(0)
 
 
 print("******************************************************")
@@ -90,17 +126,15 @@ train_data = original_data[:-future_predictions]
 # Големина на прозореца на движещата се средна
 window = 3
 
+
 average = movingAverage(train_data, window)
 
+padded_data
+
 average = np.pad(average, (0,future_predictions-1))
-print(average)
-print(original_data)
 
-
-sys.exit(0)
-
-for i in range(0, future_predictions): 
-    sys.exit(0)
+for i in range(0, future_predictions-1): 
+    average[datapoints+i+1]=average
 
 #plt.figure(figsize=(16,9))
 plt.grid(True, dashes=(1,1))
