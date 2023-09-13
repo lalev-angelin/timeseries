@@ -50,16 +50,35 @@ def movingAverageWithPad(data, window,
     ret = movingAverage(data, window)
     print(data)
     
+    source_position = len(data)
+    padded_data = np.pad(data, (0, num_predictions)).astype('double')
+    
+    
     remaining_predictions = num_predictions-1
+
     start_position = len(ret)
     ret = np.pad(ret, (0, remaining_predictions))
+    stop_position = len(ret)
+    
+    print(padded_data)
     print(ret)
+    
+    print(source_position)
+    print(start_position)
+    print(stop_position)
 
-    for c in (start_position, len(ret)-1):
-        print(ret[c])        
-        
+    padded_data[source_position]=ret[start_position-1]
+    for c in range(start_position, stop_position):
+#        print(padded_data)
+        part = padded_data[source_position-window+1: source_position+1]
+#        print(part)
+        source_position=source_position+1
+        padded_data[source_position]=movingAverage(part, window)[0]
+#        print(padded_data)
 
+    print(padded_data)
     sys.exit(0)
+        
     
     for i in range(0, window):
         sm = 0
