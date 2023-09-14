@@ -74,29 +74,12 @@ def movingAverageWithPad(data, window,
 #        print(part)
         source_position=source_position+1
         padded_data[source_position]=movingAverage(part, window)[0]
+        ret[c]=padded_data[source_position]
 #        print(padded_data)
+    return ret
 
-    print(padded_data)
-    sys.exit(0)
         
-    
-    for i in range(0, window):
-        sm = 0
-        count = 0
-        for j in range (0, i):
-            sm = sm + data[j] 
-    
-    
-    
-    for counter in range(2, len(data)):
-        ret[counter]=data[counter]
-        
-    
-test = np.array([0,1,2,3,4,5,6,7,8,9])
-movingAverageWithPad(test, 3, 6)    
-sys.exit(0)
-
-
+   
 print("******************************************************")
 print("* Start ")
 print("*")
@@ -146,14 +129,7 @@ train_data = original_data[:-future_predictions]
 window = 3
 
 
-average = movingAverage(train_data, window)
-
-padded_data
-
-average = np.pad(average, (0,future_predictions-1))
-
-for i in range(0, future_predictions-1): 
-    average[datapoints+i+1]=average
+average = movingAverageWithPad(train_data, window, future_predictions)
 
 #plt.figure(figsize=(16,9))
 plt.grid(True, dashes=(1,1))
