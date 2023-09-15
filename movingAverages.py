@@ -60,12 +60,12 @@ def movingAverageWithPad(data, window,
     ret = np.pad(ret, (0, remaining_predictions))
     stop_position = len(ret)
     
-    print(padded_data)
-    print(ret)
+    #print(padded_data)
+    #print(ret)
     
-    print(source_position)
-    print(start_position)
-    print(stop_position)
+    #print(source_position)
+    #print(start_position)
+    #print(stop_position)
 
     padded_data[source_position]=ret[start_position-1]
     for c in range(start_position, stop_position):
@@ -101,11 +101,6 @@ print("datapoints:", datapoints)
 # трябва да прогнозираме
 future_predictions = data.iloc[2,3]
 print("future_predictions:", future_predictions)
-
-# lookback - брой на периодите, които ще гледаме назад, за да направим 
-# предсказание
-lookback = 6
-print("lookback:",lookback)
 
 # series_name ще съдържа името на серията
 series_name = data.iloc[2,0]
@@ -143,31 +138,3 @@ sys.exit(0)
 
 moving_average = movingAverage(original_data, 3)
 
-
-
-
-
-
-plt.plot(scaled)
-
-
-print(row.iloc[3])
-plt.title(data.iloc[2,0])
-
-print(scaled)
-
-xvals = np.arange((scaled.shape[0]))
-print(xvals)
-arr = np.reshape(arr,  (-1,1))
-
-print(xvals)
-print(arr)
-
-model.fit(x=xvals, y=scaled, epochs=100)
-predicted = model.predict(xvals)
-
-
-plt.plot(scaled, color='blue')
-plt.plot(predicted, color='green')
-plt.grid(True, dashes=(1,1))
-plt.axvline(x=(arr.shape[0]-6), color="red", linestyle="--")
