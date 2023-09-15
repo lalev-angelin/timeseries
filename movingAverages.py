@@ -48,7 +48,7 @@ def movingAverageWithPad(data, window,
                          num_predictions):
 
     ret = movingAverage(data, window)
-    print(data)
+    #print(data)
     
     source_position = len(data)
     padded_data = np.pad(data, (0, num_predictions)).astype('double')

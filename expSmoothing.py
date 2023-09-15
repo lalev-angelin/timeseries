@@ -13,6 +13,8 @@ from sklearn.preprocessing import MinMaxScaler
 import matplotlib.pyplot as plt
 from numpy.random import seed
 import sys
+from statsmodels.tsa.api import ExponentialSmoothing, SimpleExpSmoothing, Holt
+
 
 #####################################################
 # Изчислява движеща се средна от  numpy масив nparr, 
@@ -48,7 +50,7 @@ def movingAverageWithPad(data, window,
                          num_predictions):
 
     ret = movingAverage(data, window)
-    print(data)
+    #print(data)
     
     source_position = len(data)
     padded_data = np.pad(data, (0, num_predictions)).astype('double')
@@ -134,7 +136,24 @@ plt.plot(original_data, color="blue", label="Original data")
 plt.axvline(x=datapoints, color="red", linestyle="--", label="Forecast horizon")
 plt.plot(np.arange(window, len(average)+window), average, color="orange", label="Moving average 3")
 plt.legend()
-sys.exit(0)
 
-moving_average = movingAverage(original_data, 3)
+hwresults = SimpleExpSmoothing(train_data, initialization_method='estimated').fit()
+forecast = hwresults.predict(start=0, end=len(train_data)+future_predictions-1)
+
+plt.plot(forecast, color="green", 
+         label="SES (est $\\alpha=%s)$" % hwresults.params['smoothing_level'])
+plt.legend()
+
+alpha = 0.7
+hwresults = SimpleExpSmoothing(train_data, initialization_method='heuristic').fit(alpha)
+forecast = hwresults.predict(start=0, end=len(train_data)+future_predictions-1)
+plt.plot(forecast, color="magenta", 
+         label="SES (emp $\\alpha=%s)$" % hwresults.params['smoothing_level'])
+plt.legend()
+
+hwresults = Holt(train_data, initialization_method='estimated').fit(smoothing_level=0.2, smoothing_trend=0.8, optimized=True)
+forecast = hwresults.predict(start=0, end=len(train_data)+future_predictions-1)
+plt.plot(forecast, color="black", 
+         label="Double ES (Holt)" % hwresults.params['smoothing_level'])
+plt.legend()
 
