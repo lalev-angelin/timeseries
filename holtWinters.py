@@ -91,25 +91,32 @@ print("*")
 data = read_csv('m1.csv', sep=',', decimal=".")
 #print(data)
 
+# Номер на ред с данни
+rowno = 269
+
 # Вземаме ред с данни
-row = data.iloc[2,7:].dropna()
-#print("row\n", row)
+row = data.iloc[rowno,7:].dropna()
+print("row\n", row)
+
 
 # datapoints ще съдържа броя на наблюденията
-datapoints = data.iloc[2,1]
+datapoints = data.iloc[rowno,1]
 print("datapoints:", datapoints)
+
+# Брой сезони, 1 - ако няма сезонност
+seasonality = data.iloc[rowno, 2]
 
 # future_predictions ще съдържа броя на периодите в бъдещето, които 
 # трябва да прогнозираме
-future_predictions = data.iloc[2,3]
+future_predictions = data.iloc[rowno,3]
 print("future_predictions:", future_predictions)
 
 # series_name ще съдържа името на серията
-series_name = data.iloc[2,0]
+series_name = data.iloc[rowno,0]
 print("series_name:", series_name)
 
 # series_type ще съдържа типа на серията - годишна, месечна ... 
-series_type=data.iloc[2,4]
+series_type=data.iloc[rowno,4]
 print("series_type", series_type)
 
 # Някои проверки за валидност 
@@ -128,7 +135,7 @@ window = 3
 
 average = movingAverageWithPad(train_data, window, future_predictions)
 
-#plt.figure(figsize=(16,9))
+plt.figure(figsize=(8,4.5))
 plt.grid(True, dashes=(1,1))
 plt.title(series_name+series_type)
 plt.xticks(rotation=90)
@@ -147,29 +154,41 @@ plt.legend()
 hwresults = SimpleExpSmoothing(train_data, initialization_method='estimated').fit()
 forecast = hwresults.predict(start=0, end=len(train_data)+future_predictions-1)
 
+#print(hwresults.params)
+#sys.exit(1)
+
 plt.plot(forecast, color="green", 
-         label="SES (est $\\alpha=%s)$" % hwresults.params['smoothing_level'])
+         label="SES (est $\\alpha=%s)$" % round(hwresults.params['smoothing_level'], 2))
 plt.legend()
-
-alpha = 0.7
-hwresults = SimpleExpSmoothing(train_data, initialization_method='heuristic').fit(alpha)
-forecast = hwresults.predict(start=0, end=len(train_data)+future_predictions-1)
-plt.plot(forecast, color="magenta", 
-         label="SES (emp $\\alpha=%s)$" % hwresults.params['smoothing_level'])
-plt.legend()
-
 
 # Холт 
 
-hwresults = Holt(train_data, initialization_method='estimated').fit(smoothing_level=0.2, smoothing_trend=0.8, optimized=True)
+# Забележете, че ако изпуснем параметрите на fit 
+# smoothing_level= и smoothing_trend=,
+# то си ги оптимизира. Не знаем точно как, но видях max-log-likehood някъде
+# в документацията?
+ 
+hwresults = Holt(train_data, initialization_method='estimated').fit(optimized=True)
 forecast = hwresults.predict(start=0, end=len(train_data)+future_predictions-1)
 plt.plot(forecast, color="black", 
-         label="Double ES (Holt)" % hwresults.params['smoothing_level'])
+         label="Holt $\\alpha=%s$, $\\beta=%s$" % 
+         (round(hwresults.params['smoothing_level'],2), 
+               round(hwresults.params['smoothing_trend'],2)))
 plt.legend()
 
-hwresults = Holt(train_data, initialization_method='estimated').fit(smoothing_level=0.2, smoothing_trend=0.8, optimized=True)
+
+
+# Холт - Уинтърс
+hwresults = ExponentialSmoothing(train_data, 
+                                 initialization_method='estimated', trend="add", 
+                                 seasonal="add", seasonal_periods=seasonality).fit(optimized=True)
 forecast = hwresults.predict(start=0, end=len(train_data)+future_predictions-1)
-plt.plot(forecast, color="black", 
-         label="Double ES (Holt)" % hwresults.params['smoothing_level'])
+
+plt.plot(forecast, color="magenta", 
+         label="Holt-Winters $\\alpha=%s$, $\\beta=%s$, $\\gamma=%s$" % 
+         (round(hwresults.params['smoothing_level'],2), 
+               round(hwresults.params['smoothing_trend'],2), 
+               round(hwresults.params['smoothing_seasonal'], 2)))
 plt.legend()
+
 

@@ -89,25 +89,28 @@ print("*")
 data = read_csv('m1.csv', sep=',', decimal=".")
 #print(data)
 
+# Номер на ред 
+rowno = 2
+
 # Вземаме ред с данни
-row = data.iloc[2,7:].dropna()
+row = data.iloc[rowno,7:].dropna()
 #print("row\n", row)
 
 # datapoints ще съдържа броя на наблюденията
-datapoints = data.iloc[2,1]
+datapoints = data.iloc[rowno,1]
 print("datapoints:", datapoints)
 
 # future_predictions ще съдържа броя на периодите в бъдещето, които 
 # трябва да прогнозираме
-future_predictions = data.iloc[2,3]
+future_predictions = data.iloc[rowno,3]
 print("future_predictions:", future_predictions)
 
 # series_name ще съдържа името на серията
-series_name = data.iloc[2,0]
+series_name = data.iloc[rowno,0]
 print("series_name:", series_name)
 
 # series_type ще съдържа типа на серията - годишна, месечна ... 
-series_type=data.iloc[2,4]
+series_type=data.iloc[rowno,4]
 print("series_type", series_type)
 
 # Някои проверки за валидност 
