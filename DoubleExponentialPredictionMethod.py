@@ -1,0 +1,37 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Sep 18 09:26:35 2023
+
+@author: ownjo
+"""
+
+from PredictionMethod import PredictionMethod
+from statsmodels.tsa.api import Holt
+import numpy as np
+
+class DoubleExponentialPredictionMethod(PredictionMethod):
+    
+    def __init__(self, data, numTrainPoints, numSeasons=1, params=(None, None)):
+        super().__init__(data, numTrainPoints, numSeasons)
+        self.alpha = params[0]
+        self.beta = params[1]
+        # Или двата параметъра, или нищо. Който иска просто изглаждане, има си клас.
+        if self.alpha==None:
+            assert self.beta==None
+        else:
+            assert self.beta!=None
+            
+            
+    def predict(self):
+        
+        npdata = np.array(self.trainData)
+        
+        if (self.alpha==None):
+            self.hwresults = Holt(npdata, initialization_method='estimated').fit(optimized=True)    
+        else:
+            self.hwresults = Holt(npdata, initialization_method='estimated').fit(smoothing_level=self.alpha, trend_level=self.beta, optimized=False)
+            
+
+        self.prediction = self.hwresults.predict(start=0, end=self.numAllPoints)
+        return self.prediction
