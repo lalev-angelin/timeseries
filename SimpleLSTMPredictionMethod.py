@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+Created on Mon Sep 18 18:04:10 2023
+
+@author: ownjo
+"""
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
 Created on Mon Sep 18 10:17:02 2023
 
 @author: ownjo
@@ -9,16 +17,16 @@ Created on Mon Sep 18 10:17:02 2023
 import numpy as np
 from PredictionMethod import PredictionMethod
 from keras.models import Sequential
-from keras.layers import Dense, SimpleRNN
+from keras.layers import Dense, SimpleRNN, LSTM
 from sklearn.preprocessing import MinMaxScaler
 import sys
 import cmath
 
-class SimpleRNNPredictionMethod(PredictionMethod):
+class SimpleLSTMPredictionMethod(PredictionMethod):
     
     def constructModel(self, rnn1NeuronCount):
         model = Sequential()
-        model.add(SimpleRNN(rnn1NeuronCount, input_shape=(1,1), activation='tanh'))
+        model.add(LSTM(rnn1NeuronCount, input_shape=(1,1), activation='tanh'))
         model.add(Dense(units=self.numTestPoints, activation='tanh'))
         model.compile(loss='mean_squared_error', optimizer='adam')
         return model
