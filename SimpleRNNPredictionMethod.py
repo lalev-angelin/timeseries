@@ -8,19 +8,20 @@ Created on Mon Sep 18 10:17:02 2023
 
 import numpy as np
 from PredictionMethod import PredictionMethod
-#from keras.models import Sequential
-#from keras.layers import Dense, SimpleRNN
+from keras.models import Sequential
+from keras.layers import Dense, SimpleRNN
 from sklearn.preprocessing import MinMaxScaler
 import sys
+import cmath
 
 class SimpleRNNPredictionMethod(PredictionMethod):
     
-    def constructModel(self):
+    def constructModel(self, rnn1NeuronCount):
         model = Sequential()
-        model.add(SimpleRNN(lenTrainInput, input_shape=(1,1), activation='tanh'))
-        model.add(Dense(units=future_predictions, activation='tanh'))
+        model.add(SimpleRNN(rnn1NeuronCount, input_shape=(1,1), activation='tanh'))
+        model.add(Dense(units=self.numTestPoints, activation='tanh'))
         model.compile(loss='mean_squared_error', optimizer='adam')
-        
+        return model
     
     def predict(self):
         npData = np.array(self.data)
@@ -33,28 +34,46 @@ class SimpleRNNPredictionMethod(PredictionMethod):
         npScaledData = scaler.fit_transform(npScaledData)
         npScaledData = npScaledData.reshape(-1)
         
-        print(npScaledData)
-                
         # Не можем да влизаме в тестовото множество
         # a искаме да правим прогноза, обхващаща 
         # numTestPoints периода напред
-        npTrainInput = np.array(npScaledData[:-2*self.numTestPoints])
-        print(npTrainInput)
+        npTrainInput = np.array(npScaledData[:-2*self.numTestPoints]).reshape(-1,1)
+        print("npTrainInput dimensions:", npTrainInput.shape)
 
         # Оформя изхода на групи от по predictions_plus_gap показатели
         npBatchedOutput = np.array([npScaledData[i:i+self.numTestPoints] for i in range(0, self.numAllPoints-self.numTestPoints+1)])
-        print(npBatchedOutput)
         
         npTrainOutput = np.array(npBatchedOutput[1:-self.numTestPoints])
-        print(npTrainOutput)
-        sys.exit(0)
         
+        npTestInput = np.array(npScaledData[:-self.numTestPoints]).reshape(-1,1)
+       
         
+        model = self.constructModel(self.numAllPoints)
+        model.fit(x=npTrainInput, y=npTrainOutput, epochs=1000)
         
-        #npTrainOutput =  
-        # Оформя изхода на групи от по predictions_plus_gap показатели
-        #out = np.array([rownp[i:i+future_predictions] for i in range(0, rownp.size-future_predictions+1) ])
-        #print("Output dimensions:\n", out.shape)
-        #print("Output:\n", out)
+        print("Test input:", npTestInput)
+        rawPredicted = model.predict(npTestInput)
+        print("rawPredicted dimensions:", rawPredicted.shape)
+        print("rawPredicted:\n", rawPredicted) 
+       
+        predictedFirst = np.take(rawPredicted, 0, axis=1)
+
+        #print("Predicted_first dimensions:", predicted_first.shape)
+        #print(predicted_first)
+
+        predictedLast = np.array(rawPredicted[-1:,1:].reshape(-1))
+        #print("Predicted_last dimensions:", predicted_last.shape)
+        #print("Predicted_last:", predicted_last)
+
+        predicted = np.concatenate((predictedFirst, predictedLast))
+
+        predicted = predicted.reshape(-1,1)
+        predicted = scaler.inverse_transform(predicted)
+        predicted = predicted.reshape(-1)
+        predicted = np.insert(predicted, 0, np.NaN)
+        
+        self.prediction = predicted.flatten()
+        
+        return self.prediction
 
     

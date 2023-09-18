@@ -96,6 +96,8 @@ for q in range (0, len (data)):
     # Проста RNN
     simpleRNN = SimpleRNNPredictionMethod(row, datapoints)
     prediction = simpleRNN.predict()
+    plt.plot(prediction, color="cyan", label="Simple RNN, MAPE=%s, wMAPE=%s" % (simpleRNN.computeMAPE(), simpleRNN.computeWMAPE()))
+    plt.legend()
 
     pdf.savefig(fig)
 
