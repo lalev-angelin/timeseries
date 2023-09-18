@@ -12,6 +12,7 @@ from ExponentialPredictionMethod import ExponentialPredictionMethod
 from DoubleExponentialPredictionMethod import DoubleExponentialPredictionMethod
 from TripleExponentialPredictionMethod import TripleExponentialPredictionMethod
 from SimpleRNNPredictionMethod import SimpleRNNPredictionMethod
+from SimpleLSTMPredictionMethod import SimpleLSTMPredictionMethod
 import pandas as pd
 
 ### ЗАРЕЖДАНЕ НА ДАННИТЕ
@@ -21,22 +22,9 @@ data = pd.read_csv('m1.csv', sep=',', decimal=".")
 
 pdf = PdfPages("graphs_m1.pdf")
 
-types = {
-    'name': 'object',
-    'datapoints': 'int32',
-    'future_predictions': 'int32',
-    'ma_mape': 'float64',
-    'ma_wmape': 'float64',
-    'es_mape': 'float64',
-    'es_wmape': 'float64',
-    'holt_mape': 'float64',
-    'holt_wmape': 'float64',
-    'holtwinters_mape': 'float64',
-    'simple_rnn_mape': 'float64', 
-    'simple_rnn_wmape': 'float64'
-   }
 
-resultData = pd.DataFrame(columns=types.keys())
+
+resultData = pd.DataFrame()
 # for c in resultData.columns:
 #     resultData[c] = resultData[c].astype(types[c])
 
@@ -136,8 +124,19 @@ for q in range (260, 270):
     plt.plot(prediction, color="cyan", label="Simple RNN, MAPE=%s, wMAPE=%s" % (simpleRNN.computeMAPE(), simpleRNN.computeWMAPE()))
     plt.legend()
     
-    resultData.at[q, 'prediction_mape']=simpleRNN.computeMAPE()
-    resultData.at[q, 'prediction_wmape']=simpleRNN.computeWMAPE()
+    resultData.at[q, 'simplernn_mape']=simpleRNN.computeMAPE()
+    resultData.at[q, 'simplernn_wmape']=simpleRNN.computeWMAPE()
+    
+    # Проста LSTM
+    simpleLSTM = SimpleLSTMPredictionMethod(row, datapoints)
+    prediction = simpleLSTM.predict()
+    plt.plot(prediction, color="brown", label="Simple LSTM, MAPE=%s, wMAPE=%s" % (simpleLSTM.computeMAPE(), simpleLSTM.computeWMAPE()))
+    plt.legend()
+    
+    resultData.at[q, 'simplelstm_mape']=simpleLSTM.computeMAPE()
+    resultData.at[q, 'simplelstm_wmape']=simpleLSTM.computeWMAPE()
+
+    
 
     pdf.savefig(fig)
 
