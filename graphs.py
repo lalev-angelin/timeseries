@@ -12,6 +12,7 @@ from MovingAveragePredictionMethod import MovingAveragePredictionMethod
 from ExponentialPredictionMethod import ExponentialPredictionMethod
 from DoubleExponentialPredictionMethod import DoubleExponentialPredictionMethod
 from TripleExponentialPredictionMethod import TripleExponentialPredictionMethod
+from SimpleRNNPredictionMethod import SimpleRNNPredictionMethod
 
 ### ЗАРЕЖДАНЕ НА ДАННИТЕ
 
@@ -91,6 +92,10 @@ for q in range (0, len (data)):
               (holtwinters.hwresults.params['smoothing_level'], holtwinters.hwresults.params['smoothing_trend'], 
                holtwinters.hwresults.params['smoothing_seasonal'], holtwinters.computeMAPE(), holtwinters.computeWMAPE()))
     plt.legend()
+
+    # Проста RNN
+    simpleRNN = SimpleRNNPredictionMethod(row, datapoints)
+    prediction = simpleRNN.predict()
 
     pdf.savefig(fig)
 
