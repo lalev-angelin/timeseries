@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Mon Sep 18 10:17:02 2023
+Created on Mon Sep 18 19:01:45 2023
 
 @author: ownjo
 """
@@ -13,8 +13,10 @@ from keras.layers import Dense, SimpleRNN
 from sklearn.preprocessing import MinMaxScaler
 import sys
 import cmath
+from DoubleExponentialPredictionMethod import DoubleExponentialPredictionMethod 
+from TripleExponentialPredictionMethod import TripleExponentialPredictionMethod
 
-class SimpleRNNPredictionMethod(PredictionMethod):
+class AveragedRNNExponentialPredictionMethod(PredictionMethod):
     
     def constructModel(self, rnn1NeuronCount):
         model = Sequential()
@@ -24,6 +26,14 @@ class SimpleRNNPredictionMethod(PredictionMethod):
         return model
     
     def predict(self):
+               
+        if self.numSeasons==1: 
+            smooth = DoubleExponentialPredictionMethod(self.data, self.numTrainPoints)        
+        else:
+            smooth = TripleExponentialPredictionMethod(self.data, self.numTrainPoints, numSeasons=self.numSeasons)
+        
+        smoothData = smooth.predict()
+        
         npData = np.array(self.data)
         #print(npData)
        
@@ -69,7 +79,9 @@ class SimpleRNNPredictionMethod(PredictionMethod):
         predicted = predicted.reshape(-1)
         predicted = np.insert(predicted, 0, np.NaN)
         
-        self.prediction = predicted.flatten()
+        average = (smoothData + predicted.flatten())/2
+        
+        self.prediction = average
         
         return self.prediction
 

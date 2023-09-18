@@ -33,5 +33,5 @@ class DoubleExponentialPredictionMethod(PredictionMethod):
             self.hwresults = Holt(npdata, initialization_method='estimated').fit(smoothing_level=self.alpha, trend_level=self.beta, optimized=False)
             
 
-        self.prediction = self.hwresults.predict(start=0, end=self.numAllPoints)
+        self.prediction = self.hwresults.predict(start=0, end=self.numAllPoints-1)
         return self.prediction

@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+Created on Mon Sep 18 18:14:48 2023
+
+@author: ownjo
+"""
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
 Created on Mon Sep 18 10:17:02 2023
 
 @author: ownjo
@@ -13,22 +21,40 @@ from keras.layers import Dense, SimpleRNN
 from sklearn.preprocessing import MinMaxScaler
 import sys
 import cmath
+from DoubleExponentialPredictionMethod import DoubleExponentialPredictionMethod
+from TripleExponentialPredictionMethod import TripleExponentialPredictionMethod
 
-class SimpleRNNPredictionMethod(PredictionMethod):
+class CombinedRNNPredictionMethod(PredictionMethod):
+    
     
     def constructModel(self, rnn1NeuronCount):
         model = Sequential()
-        model.add(SimpleRNN(rnn1NeuronCount, input_shape=(1,1), activation='tanh'))
+        model.add(SimpleRNN(rnn1NeuronCount, input_shape=(2,1), activation='tanh'))
         model.add(Dense(units=self.numTestPoints, activation='tanh'))
         model.compile(loss='mean_squared_error', optimizer='adam')
         return model
     
     def predict(self):
+        scaler = MinMaxScaler(feature_range=(0,1))
+       
+        if self.numSeasons==1: 
+            smooth = DoubleExponentialPredictionMethod(self.data, self.numTrainPoints)        
+        else:
+            smooth = TripleExponentialPredictionMethod(self.data, self.numTrainPoints, numSeasons=self.numSeasons)
+        
+        # Изгладени данни с Холт или Холт-Уинтърс
+        npSmoothData = smooth.predict()
+        
+        # Мащабиране 
+        npSmoothData = npSmoothData.reshape(-1, 1)
+        npSmoothData = scaler.fit_transform(npSmoothData)
+        npSmoothData = npSmoothData.reshape(-1)
+        
+        npTrainSmoothInput = np.array(npSmoothData[:-2*self.numTestPoints]).reshape(-1,1)
+        
         npData = np.array(self.data)
         #print(npData)
        
-        scaler = MinMaxScaler(feature_range=(0,1))
-
         # Мащабиране на обучителното множество
         npScaledData = npData.reshape(-1, 1)
         npScaledData = scaler.fit_transform(npScaledData)
@@ -44,12 +70,14 @@ class SimpleRNNPredictionMethod(PredictionMethod):
         
         npTrainOutput = np.array(npBatchedOutput[1:-self.numTestPoints])
         
-        
         npTestInput = np.array(npScaledData[:-self.numTestPoints]).reshape(-1,1)
+        npTestSmoothInput = np.array(npSmoothData[:-self.numTestPoints].reshape(-1,1))
+        npTestInput = np.concatenate((npTestInput, npTestSmoothInput), axis=1)
+
+        npTrainInput = np.concatenate((npTrainInput, npTrainSmoothInput), axis=1) 
        
-        
         model = self.constructModel(self.numAllPoints)
-        model.fit(x=npTrainInput, y=npTrainOutput, epochs=1000)
+        model.fit(x=npTrainInput, y=npTrainOutput, epochs=10000)
         
         rawPredicted = model.predict(npTestInput)
        

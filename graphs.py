@@ -13,20 +13,19 @@ from DoubleExponentialPredictionMethod import DoubleExponentialPredictionMethod
 from TripleExponentialPredictionMethod import TripleExponentialPredictionMethod
 from SimpleRNNPredictionMethod import SimpleRNNPredictionMethod
 from SimpleLSTMPredictionMethod import SimpleLSTMPredictionMethod
+from CombinedRNNPredictionMethod import CombinedRNNPredictionMethod
+from AveragedRNNExponentialPredictionMethod import AveragedRNNExponentialPredictionMethod
 import pandas as pd
 
 ### ЗАРЕЖДАНЕ НА ДАННИТЕ
 
 data = pd.read_csv('m1.csv', sep=',', decimal=".")
-#print(data)
 
 pdf = PdfPages("graphs_m1.pdf")
 
 
 
 resultData = pd.DataFrame()
-# for c in resultData.columns:
-#     resultData[c] = resultData[c].astype(types[c])
 
 #for q in range (0, len (data)):
 for q in range (260, 270):
@@ -71,7 +70,7 @@ for q in range (260, 270):
     prediction = average.predict()
         
     
-    fig = plt.figure(q, figsize=(16,9))
+    fig = plt.figure(q, figsize=(32,18))
     plt.grid(True, dashes=(1,1))
     plt.title(series_name+series_type)
     plt.xticks(rotation=90)
@@ -80,8 +79,8 @@ for q in range (260, 270):
     plt.plot(prediction, color="orange", label="Moving average 3, MAPE=%s, wMAPE=%s" % (average.computeMAPE(), average.computeWMAPE()))
     plt.legend()
 
-    resultData[q, 'ma_mape']=average.computeMAPE()
-    resultData[q, 'ma_wmape']=average.computeWMAPE()
+    resultData.at[q, 'ma_mape']=average.computeMAPE()
+    resultData.at[q, 'ma_wmape']=average.computeWMAPE()
 
     # Просто експоненциално изглаждане
     exponential = ExponentialPredictionMethod(row, datapoints)
@@ -136,7 +135,24 @@ for q in range (260, 270):
     resultData.at[q, 'simplelstm_mape']=simpleLSTM.computeMAPE()
     resultData.at[q, 'simplelstm_wmape']=simpleLSTM.computeWMAPE()
 
+    # Комбиниран RNN
+    combinedRNN = CombinedRNNPredictionMethod(row, datapoints, numSeasons=seasonality)
+    prediction = combinedRNN.predict()
+    plt.plot(prediction, color="darkgray", label="Combined RNN, MAPE=%s, wMAPE=%s" % (combinedRNN.computeMAPE(), combinedRNN.computeWMAPE()))
+    plt.legend()
     
+    resultData.at[q, 'combinedrnn_mape']=combinedRNN.computeMAPE()
+    resultData.at[q, 'combinedrnn_wmape']=combinedRNN.computeWMAPE()    
+
+    # Усреднен RNN
+    averagedRNN = AveragedRNNExponentialPredictionMethod(row, datapoints, numSeasons=seasonality)
+    prediction = averagedRNN.predict()
+    plt.plot(prediction, color="yellow", label="Averaged RNN, MAPE=%s, wMAPE=%s" % (averagedRNN.computeMAPE(), averagedRNN.computeWMAPE()))
+    plt.legend()
+    
+    resultData.at[q, 'averaged_mape']=averagedRNN.computeMAPE()
+    resultData.at[q, 'averaged_wmape']=averagedRNN.computeWMAPE()    
+
 
     pdf.savefig(fig)
 

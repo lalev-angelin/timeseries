@@ -47,5 +47,5 @@ class TripleExponentialPredictionMethod(PredictionMethod):
             seasonal="add", seasonal_periods=self.numSeasons).fit(smoothing_level=self.alpha, trend_level=self.beta, smoothing_seasonal=self.gamma, optimized=False)
             
 
-        self.prediction = self.hwresults.predict(start=0, end=self.numAllPoints)
+        self.prediction = self.hwresults.predict(start=0, end=self.numAllPoints-1)
         return self.prediction

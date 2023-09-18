@@ -25,5 +25,5 @@ class ExponentialPredictionMethod(PredictionMethod):
         else:
             self.hwresults = SimpleExpSmoothing(npdata, initialization_method='heuristic').fit(smoothing_level=self.alpha)
 
-        self.prediction = self.hwresults.predict(start=0, end=self.numAllPoints)
+        self.prediction = self.hwresults.predict(start=0, end=self.numAllPoints-1)
         return self.prediction
