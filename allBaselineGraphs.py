@@ -15,6 +15,11 @@ from numpy.random import seed
 import sys
 from statsmodels.tsa.api import ExponentialSmoothing, SimpleExpSmoothing, Holt
 from matplotlib.backends.backend_pdf import PdfPages
+from keras.models import Sequential
+from keras.layers import Dense, SimpleRNN
+import tensorflow as tf
+
+
 
 #####################################################
 # Изчислява движеща се средна от  numpy масив nparr, 
@@ -93,7 +98,8 @@ data = read_csv('m1.csv', sep=',', decimal=".")
 
 pdf = PdfPages("graphs_m1.pdf")
 
-for q in range (0, len(data)):
+#for q in range (0, len(data)):
+for q in range(250, 290):
     # Номер на ред с данни
     rowno = q
     
@@ -138,7 +144,7 @@ for q in range (0, len(data)):
     
     average = movingAverageWithPad(train_data, window, future_predictions)
     
-    fig = plt.figure(q, figsize=(8,4.5))
+    fig = plt.figure(q, figsize=(16,9))
     plt.grid(True, dashes=(1,1))
     plt.title(series_name+series_type)
     plt.xticks(rotation=90)
@@ -161,7 +167,7 @@ for q in range (0, len(data)):
     #sys.exit(1)
     
     plt.plot(forecast, color="green", 
-             label="SES (est $\\alpha=%s)$" % round(hwresults.params['smoothing_level'], 2))
+             label="SES (est $\\alpha=%s)$" % round(hwresults.params['smoothing_level'], 20))
     plt.legend()
     
     # Холт 
@@ -175,8 +181,8 @@ for q in range (0, len(data)):
     forecast = hwresults.predict(start=0, end=len(train_data)+future_predictions-1)
     plt.plot(forecast, color="black", 
              label="Holt $\\alpha=%s$, $\\beta=%s$" % 
-             (round(hwresults.params['smoothing_level'],2), 
-                   round(hwresults.params['smoothing_trend'],2)))
+             (round(hwresults.params['smoothing_level'],20), 
+                   round(hwresults.params['smoothing_trend'],20)))
     plt.legend()
     
     
@@ -190,11 +196,222 @@ for q in range (0, len(data)):
         
         plt.plot(forecast, color="magenta", 
                  label="Holt-Winters $\\alpha=%s$, $\\beta=%s$, $\\gamma=%s$" % 
-                 (round(hwresults.params['smoothing_level'],2), 
-                       round(hwresults.params['smoothing_trend'],2), 
-                       round(hwresults.params['smoothing_seasonal'], 2)))
+                 (round(hwresults.params['smoothing_level'],20), 
+                       round(hwresults.params['smoothing_trend'],20), 
+                       round(hwresults.params['smoothing_seasonal'], 20)))
         plt.legend()
 
+
+
+
+    #### RNN
+    
+    # Би трябвало да "заковат" генератора на случайни числа така, че
+    # винаги да произвежда едни и същи последователности от случайни 
+    # числа. Това на свой ред би трябвало да подобри възпроизводимостта на 
+    # експериментите. 
+    seed(1)
+    tf.random.set_seed(2)
+
+    # Спира, ако имаме TensorFlow, който не е построен с поддръжка на  
+    # GPU или пък няма физически поддържано GPU
+    assert tf.test.is_built_with_cuda()
+    assert tf.test.is_gpu_available()
+
+    #### МАЩАБИРАНЕ НА ДАННИТЕ
+    
+    scaler = MinMaxScaler(feature_range=(0,1))
+    rownp = row.values.reshape(-1, 1)
+    rownp = scaler.fit_transform(rownp)
+    rownp = rownp.reshape(-1)
+    
+    #print("Rownp:")
+    #print(rownp)
+    
+    ### СЪЗДАВАНЕ И ОФОРМЯНЕ НА NUMPY МАСИВИТЕ
+    
+    
+    # Оформя входа на групи от по lookback показатели
+    inp = rownp.reshape(-1,1)
+    #print("Input dimensions:\n", inp.shape)
+    #print("Input:\n", inp)
+    
+    
+    # Оформя изхода на групи от по predictions_plus_gap показатели
+    out = np.array([rownp[i:i+future_predictions] for i in range(0, rownp.size-future_predictions+1) ])
+    #print("Output dimensions:\n", out.shape)
+    #print("Output:\n", out)
+    
+    train_inp = inp[:-2*future_predictions]
+    #print("Train input dimensions\n", train_inp.shape)                
+    #print("Train input:\n", train_inp)
+    
+    
+    
+    train_out = out[1:-future_predictions:]
+    #print("Train output dimensions\n", train_out.shape)
+    #print("Train output:\n", train_out)
+    
+    
+    test_inp = inp[:-future_predictions]
+    #print(test_inp.shape)
+    #print("Test inpuot: ", test_inp)
+    
+    
+    #### СЪЗДАВАНЕ И КОМПИЛИРАНЕ НА МОДЕЛА 
+    
+    model = Sequential()
+    model.add(SimpleRNN(len(test_inp), input_shape=(1,1), activation='tanh'))
+    model.add(Dense(units=future_predictions, activation='tanh'))
+    model.compile(loss='mean_squared_error', optimizer='adam')
+    
+    #wx = model.get_weights()[0]
+    #wh = model.get_weights()[1]
+    #bh = model.get_weights()[2]
+    #wy = model.get_weights()[3]
+    #by = model.get_weights()[4]
+    
+    #print('wx = ', wx, ' wh = ', wh, ' bh = ', bh, ' wy =', wy, 'by = ', by)
+    #model.summary()
+    #tf.keras.utils.plot_model (model, show_shapes = True, show_layer_names = True)
+    
+    model.fit(x=train_inp, y=train_out, epochs=1000)
+    
+    
+    predicted = model.predict(test_inp)
+    #print("Predicted dimensions:", predicted.shape)
+    #print("Predicted:\n", predicted) 
+    
+    
+    predicted_first = np.take(predicted, 0, axis=1)
+    
+    #print("Predicted_first dimensions:", predicted_first.shape)
+    #print(predicted_first)
+    
+    predicted_last = np.array(predicted[-1:,1:].reshape(-1))
+    #print("Predicted_last dimensions:", predicted_last.shape)
+    #print("Predicted_last:", predicted_last)
+    
+    final_output = np.concatenate((predicted_first, predicted_last))
+    
+    final_output = final_output.reshape(-1,1)
+    final_output = scaler.inverse_transform(final_output)
+    final_output = final_output.reshape(-1)
+    
+    rownp = rownp.reshape(-1,1)
+    rownp = scaler.inverse_transform(rownp)
+    rownp = rownp.reshape(-1)
+    
+    plt.plot(np.arange(1, len(rownp)), final_output, color='brown', label="RNN Conf 1")
+    plt.legend()
+
+
+
+    #### RNN2
+    
+    # Би трябвало да "заковат" генератора на случайни числа така, че
+    # винаги да произвежда едни и същи последователности от случайни 
+    # числа. Това на свой ред би трябвало да подобри възпроизводимостта на 
+    # експериментите. 
+    seed(1)
+    tf.random.set_seed(2)
+
+    # Спира, ако имаме TensorFlow, който не е построен с поддръжка на  
+    # GPU или пък няма физически поддържано GPU
+    assert tf.test.is_built_with_cuda()
+    assert tf.test.is_gpu_available()
+
+    #### МАЩАБИРАНЕ НА ДАННИТЕ
+    
+    scaler = MinMaxScaler(feature_range=(0,1))
+    rownp = row.values.reshape(-1, 1)
+    rownp = scaler.fit_transform(rownp)
+    rownp = rownp.reshape(-1)
+    
+    #print("Rownp:")
+    #print(rownp)
+    
+    ### СЪЗДАВАНЕ И ОФОРМЯНЕ НА NUMPY МАСИВИТЕ
+    
+    
+    # Оформя входа на групи от по lookback показатели
+    inp = rownp.reshape(-1,1)
+    #print("Input dimensions:\n", inp.shape)
+    #print("Input:\n", inp)
+    
+    
+    # Оформя изхода на групи от по predictions_plus_gap показатели
+    out = np.array([rownp[i:i+future_predictions] for i in range(0, rownp.size-future_predictions+1) ])
+    #print("Output dimensions:\n", out.shape)
+    #print("Output:\n", out)
+    
+    train_inp = inp[:-2*future_predictions]
+    #print("Train input dimensions\n", train_inp.shape)                
+    #print("Train input:\n", train_inp)
+    
+    
+    
+    train_out = out[1:-future_predictions:]
+    #print("Train output dimensions\n", train_out.shape)
+    #print("Train output:\n", train_out)
+    
+    
+    test_inp = inp[:-future_predictions]
+    #print(test_inp.shape)
+    #print("Test inpuot: ", test_inp)
+    
+    
+    #### СЪЗДАВАНЕ И КОМПИЛИРАНЕ НА МОДЕЛА 
+    
+    model = Sequential()
+    if seasonality>1:
+        model.add(SimpleRNN(seasonality, input_shape=(1,1)), activation='tanh')
+        model.add(SimpleRNN(len(test_inp), activation='tanh'))
+    else:
+        model.add(SimpleRNN(len(test_inp), input_shape=(1,1), activation='tanh'))
+   
+    model.add(Dense(units=future_predictions, activation='tanh'))
+    model.compile(loss='mean_squared_error', optimizer='adam')
+    
+    #wx = model.get_weights()[0]
+    #wh = model.get_weights()[1]
+    #bh = model.get_weights()[2]
+    #wy = model.get_weights()[3]
+    #by = model.get_weights()[4]
+    
+    #print('wx = ', wx, ' wh = ', wh, ' bh = ', bh, ' wy =', wy, 'by = ', by)
+    #model.summary()
+    #tf.keras.utils.plot_model (model, show_shapes = True, show_layer_names = True)
+    
+    model.fit(x=train_inp, y=train_out, epochs=1000)
+    
+    
+    predicted = model.predict(test_inp)
+    #print("Predicted dimensions:", predicted.shape)
+    #print("Predicted:\n", predicted) 
+    
+    
+    predicted_first = np.take(predicted, 0, axis=1)
+    
+    #print("Predicted_first dimensions:", predicted_first.shape)
+    #print(predicted_first)
+    
+    predicted_last = np.array(predicted[-1:,1:].reshape(-1))
+    #print("Predicted_last dimensions:", predicted_last.shape)
+    #print("Predicted_last:", predicted_last)
+    
+    final_output = np.concatenate((predicted_first, predicted_last))
+    
+    final_output = final_output.reshape(-1,1)
+    final_output = scaler.inverse_transform(final_output)
+    final_output = final_output.reshape(-1)
+    
+    rownp = rownp.reshape(-1,1)
+    rownp = scaler.inverse_transform(rownp)
+    rownp = rownp.reshape(-1)
+    
+    plt.plot(np.arange(1, len(rownp)), final_output, color='cyan', label="RNN Conf 1")
+    plt.legend()
     pdf.savefig(fig)
     
 pdf.close()

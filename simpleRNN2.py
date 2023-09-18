@@ -57,11 +57,6 @@ print("datapoints:", datapoints)
 future_predictions = data.iloc[rowno,3]
 print("future_predictions:", future_predictions)
 
-# lookback - брой на периодите, които ще гледаме назад, за да направим 
-# предсказание
-lookback = 3
-print("lookback:",lookback)
-
 # series_name ще съдържа името на серията
 series_name = data.iloc[rowno,0]
 print("series_name:", series_name)
@@ -73,8 +68,6 @@ print("series_type", series_type)
 # Някои проверки за валидност 
 assert datapoints + future_predictions == len(row.values)
 
-predictions_plus_gap = future_predictions + lookback - 1
-
  
 
 #### МАЩАБИРАНЕ НА ДАННИТЕ
@@ -84,42 +77,44 @@ rownp = row.values.reshape(-1, 1)
 rownp = scaler.fit_transform(rownp)
 rownp = rownp.reshape(-1)
 
-print("Rownp:")
-print(rownp)
-
+#print("Rownp:")
+#print(rownp)
 
 ### СЪЗДАВАНЕ И ОФОРМЯНЕ НА NUMPY МАСИВИТЕ
 
 
 # Оформя входа на групи от по lookback показатели
-inp = np.array([rownp[i:i+lookback] for i in range(0,rownp.size-lookback+1) ])
-print("Input dimensions:\n", inp.shape)
-print("Input:\n", inp)
+inp = rownp.reshape(-1,1)
+#print("Input dimensions:\n", inp.shape)
+#print("Input:\n", inp)
 
 
 # Оформя изхода на групи от по predictions_plus_gap показатели
-out = np.array([rownp[i:i+predictions_plus_gap] for i in range(0, rownp.size-predictions_plus_gap+1) ])
-print("Output dimensions:\n", out.shape)
-print("Output:\n", out)
+out = np.array([rownp[i:i+future_predictions] for i in range(0, rownp.size-future_predictions+1) ])
+#print("Output dimensions:\n", out.shape)
+#print("Output:\n", out)
 
-train_inp = np.array(inp[:-2*predictions_plus_gap,:])
-print("Train input dimensions\n", train_inp.shape)                
-print("Train input:\n", train_inp)
+train_inp = inp[:-2*future_predictions]
+#print("Train input dimensions\n", train_inp.shape)                
+#print("Train input:\n", train_inp)
 
-train_out = np.array(out[lookback:-predictions_plus_gap,:])
-print("Train output dimensions\n", train_out.shape)
-print("Train output:\n", train_out)
 
-test_inp = inp[:-predictions_plus_gap]
-print(test_inp.shape)
-print("Test inpuot: ", test_inp)
+
+train_out = out[1:-future_predictions:]
+#print("Train output dimensions\n", train_out.shape)
+#print("Train output:\n", train_out)
+
+
+test_inp = inp[:-future_predictions]
+#print(test_inp.shape)
+#print("Test inpuot: ", test_inp)
 
 
 #### СЪЗДАВАНЕ И КОМПИЛИРАНЕ НА МОДЕЛА 
 
 model = Sequential()
-model.add(SimpleRNN(lookback*6, input_shape=(lookback,1), activation='tanh'))
-model.add(Dense(units=predictions_plus_gap, activation='tanh'))
+model.add(SimpleRNN(len(test_inp), input_shape=(1,1), activation='tanh'))
+model.add(Dense(units=future_predictions, activation='tanh'))
 model.compile(loss='mean_squared_error', optimizer='adam')
 
 #wx = model.get_weights()[0]
@@ -132,33 +127,38 @@ model.compile(loss='mean_squared_error', optimizer='adam')
 #model.summary()
 #tf.keras.utils.plot_model (model, show_shapes = True, show_layer_names = True)
 
-model.fit(x=train_inp, y=train_out, epochs=100)
-
+model.fit(x=train_inp, y=train_out, epochs=1000)
 
 
 predicted = model.predict(test_inp)
-print("Predicted dimensions:", predicted.shape)
-print("Predicted:\n", predicted) 
+#print("Predicted dimensions:", predicted.shape)
+#print("Predicted:\n", predicted) 
 
 
-predicted_first = np.take(predicted[:,:], 0, axis=1)
+predicted_first = np.take(predicted, 0, axis=1)
 
-print("Predicted_first dimensions:", predicted_first.shape)
-print(predicted_first)
+#print("Predicted_first dimensions:", predicted_first.shape)
+#print(predicted_first)
 
-predicted_last = np.array(predicted[:-1,1:].reshape(-1))
-print("Predicted_last dimensions:", predicted_last.shape)
-print("Predicted_last:", predicted_last)
+predicted_last = np.array(predicted[-1:,1:].reshape(-1))
+#print("Predicted_last dimensions:", predicted_last.shape)
+#print("Predicted_last:", predicted_last)
 
-print("hah1")
 final_output = np.concatenate((predicted_first, predicted_last))
-print("hah2")
+
+final_output = final_output.reshape(-1,1)
+final_output = scaler.inverse_transform(final_output)
+final_output = final_output.reshape(-1)
+
+rownp = rownp.reshape(-1,1)
+rownp = scaler.inverse_transform(rownp)
+rownp = rownp.reshape(-1)
 
 plt.grid(True, dashes=(1,1))
 plt.axvline(x=(rownp.shape[0]-6), color="red", linestyle="--")
 plt.title(data.iloc[2,0])
 plt.plot(rownp, color='blue')
-plt.plot(final_output, color='green')
+plt.plot(np.arange(1, len(rownp)), final_output, color='green')
 plt.grid(True, dashes=(1,1))
 plt.axvline(x=(rownp.shape[0]-6), color="red", linestyle="--")
 
