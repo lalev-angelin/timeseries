@@ -10,6 +10,8 @@ from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.pyplot as plt
 from MovingAveragePredictionMethod import MovingAveragePredictionMethod
 from ExponentialPredictionMethod import ExponentialPredictionMethod
+from DoubleExponentialPredictionMethod import DoubleExponentialPredictionMethod
+from TripleExponentialPredictionMethod import TripleExponentialPredictionMethod
 
 ### ЗАРЕЖДАНЕ НА ДАННИТЕ
 
@@ -71,9 +73,25 @@ for q in range (0, len (data)):
               (exponential.hwresults.params['smoothing_level'], exponential.computeMAPE(), exponential.computeWMAPE()))
     plt.legend()
 
-
+    
     # Двойно експоненциално изглаждане
+    holt = DoubleExponentialPredictionMethod(row, datapoints)
+    prediction = holt.predict()
+    plt.plot(prediction, color="black", label="Exp. smoothing $\\alpha=%s$, $\\beta=%s$, MAPE=%s, wMAPE=%s" % 
+              (holt.hwresults.params['smoothing_level'], holt.hwresults.params['smoothing_trend'], holt.computeMAPE(), holt.computeWMAPE()))
+    plt.legend()
+
+    # Тройно експоненциално изглаждане
+    if seasonality>1:
+        holtwinters = TripleExponentialPredictionMethod(row, datapoints, numSeasons=seasonality)
+    else:
+        holtwinters = DoubleExponentialPredictionMethod(row, datapoints)
+    prediction = holtwinters.predict()
+    plt.plot(prediction, color="red", label="Exp. smoothing $\\alpha=%s$, $\\beta=%s$ $\\gamma=%s$, MAPE=%s, wMAPE=%s" % 
+              (holtwinters.hwresults.params['smoothing_level'], holtwinters.hwresults.params['smoothing_trend'], 
+               holtwinters.hwresults.params['smoothing_seasonal'], holtwinters.computeMAPE(), holtwinters.computeWMAPE()))
+    plt.legend()
 
     pdf.savefig(fig)
-    
+
 pdf.close()
