@@ -6,6 +6,8 @@ Created on Sun Sep 17 20:22:45 2023
 @author: ownjo
 """
 
+import json
+
 class PredictionMethod: 
 
     ##############################################################
@@ -21,7 +23,34 @@ class PredictionMethod:
     # 
     def predict(self):
         pass
-         
+    
+    def toJSON(self):
+        saveData = {}
+        saveData['title']="INSERT MODEL NAME HERE"
+        saveData['method']="INSERT METHOD HERE"
+        saveData['numDataPoints']=self.numAllPoints
+        saveData['numTrainPoints']=self.numTrainPoints
+        saveData['numTestPoints']=self.numTestPoints
+        saveData['data']=self.data
+        saveData['prediction']=self.prediction
+        saveData['MAPE']=self.computeMAPE()
+        saveData['wMAPE']=self.computeWMAPE()
+        return json.dumps(saveData, indent=2)
+    
+    ##############################################################
+    # Записва модела
+    #
+    def save(self, filename):
+        str = self.toJSON() 
+        file = open(filename, "w")
+        file.write(str)
+        file.close
+        
+    ##############################################################
+    # Зарежда модела
+    #
+    def load(self): 
+        pass
       
     ##############################################################
     # Изчислява средна MAPE за прогнозата.
