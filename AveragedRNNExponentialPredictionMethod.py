@@ -37,7 +37,7 @@ class AveragedRNNExponentialPredictionMethod(PredictionMethod):
         npData = np.array(self.data)
         #print(npData)
        
-        scaler = MinMaxScaler(feature_range=(0,1))
+        scaler = MinMaxScaler(feature_range=(-1,1))
 
         # Мащабиране на обучителното множество
         npScaledData = npData.reshape(-1, 1)

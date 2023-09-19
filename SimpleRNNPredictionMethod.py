@@ -9,25 +9,34 @@ Created on Mon Sep 18 10:17:02 2023
 import numpy as np
 from PredictionMethod import PredictionMethod
 from keras.models import Sequential
-from keras.layers import Dense, SimpleRNN
+from keras.layers import Dense, SimpleRNN, LSTM
 from sklearn.preprocessing import MinMaxScaler
 import sys
 import cmath
 
 class SimpleRNNPredictionMethod(PredictionMethod):
     
-    def constructModel(self, rnn1NeuronCount):
-        model = Sequential()
-        model.add(SimpleRNN(rnn1NeuronCount, input_shape=(1,1), activation='tanh'))
-        model.add(Dense(units=self.numTestPoints, activation='tanh'))
-        model.compile(loss='mean_squared_error', optimizer='adam')
+    def __init__(self, data, numTrainPoints, numSeasons=1, numNeurons=(None, None, None)):
+        super().__init__(data, numTrainPoints, numSeasons)
+        self.numNeurons = numNeurons
+    
+    def constructModel(self):
+        if self.numNeurons[0] == None: 
+           rnn1NeuronCount = self.numAllPoints * 2
+           model = Sequential()
+           model.add(SimpleRNN(rnn1NeuronCount, input_shape=(1,1), activation='tanh'))
+           model.add(Dense(units=self.numTestPoints, activation='tanh'))
+           model.compile(loss='mean_squared_error', optimizer='adam')
+        else:
+           sys.exit(1)
+           
         return model
     
     def predict(self):
         npData = np.array(self.data)
         #print(npData)
        
-        scaler = MinMaxScaler(feature_range=(0,1))
+        scaler = MinMaxScaler(feature_range=(-1,1))
 
         # Мащабиране на обучителното множество
         npScaledData = npData.reshape(-1, 1)
@@ -48,8 +57,8 @@ class SimpleRNNPredictionMethod(PredictionMethod):
         npTestInput = np.array(npScaledData[:-self.numTestPoints]).reshape(-1,1)
        
         
-        model = self.constructModel(self.numAllPoints)
-        model.fit(x=npTrainInput, y=npTrainOutput, epochs=1000)
+        model = self.constructModel()
+        model.fit(x=npTrainInput, y=npTrainOutput, epochs=2000)
         
         rawPredicted = model.predict(npTestInput)
        

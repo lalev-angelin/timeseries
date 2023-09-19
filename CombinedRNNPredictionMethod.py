@@ -35,7 +35,7 @@ class CombinedRNNPredictionMethod(PredictionMethod):
         return model
     
     def predict(self):
-        scaler = MinMaxScaler(feature_range=(0,1))
+        scaler = MinMaxScaler(feature_range=(-1,1))
        
         if self.numSeasons==1: 
             smooth = DoubleExponentialPredictionMethod(self.data, self.numTrainPoints)        
@@ -77,7 +77,7 @@ class CombinedRNNPredictionMethod(PredictionMethod):
         npTrainInput = np.concatenate((npTrainInput, npTrainSmoothInput), axis=1) 
        
         model = self.constructModel(self.numAllPoints)
-        model.fit(x=npTrainInput, y=npTrainOutput, epochs=10000)
+        model.fit(x=npTrainInput, y=npTrainOutput, epochs=2000)
         
         rawPredicted = model.predict(npTestInput)
        
