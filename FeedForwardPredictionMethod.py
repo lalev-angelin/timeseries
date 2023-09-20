@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Mon Sep 18 19:01:45 2023
+Created on Mon Sep 18 10:17:02 2023
 
 @author: ownjo
 """
@@ -9,31 +9,26 @@ Created on Mon Sep 18 19:01:45 2023
 import numpy as np
 from PredictionMethod import PredictionMethod
 from keras.models import Sequential
-from keras.layers import Dense, SimpleRNN
+from keras.layers import Dense, Dropout
 from sklearn.preprocessing import MinMaxScaler
 import sys
-import cmath
-from DoubleExponentialPredictionMethod import DoubleExponentialPredictionMethod 
-from TripleExponentialPredictionMethod import TripleExponentialPredictionMethod
 
-class AveragedRNNExponentialPredictionMethod(NeuralNetworkPredictionMethod):
+class FeedForwardPredictionMethod(PredictionMethod):
     
-    def constructModel(self, rnn1NeuronCount):
-        model = Sequential()
-        model.add(SimpleRNN(rnn1NeuronCount, input_shape=(1,1), activation='tanh'))
-        model.add(Dense(units=self.numTestPoints, activation='tanh'))
-        model.compile(loss='mean_squared_error', optimizer='adam')
-        return model
+    def __init__(self, data, numTrainPoints, numSeasons=1):
+        super().__init__(data, numTrainPoints, numSeasons)
+    
+    def constructModel(self):
+       model = Sequential()
+       model.add(Dense(20, input_shape=(1,1), activation='tanh'))
+       model.add(Dropout(0.1))
+       model.add(Dense(20, activation='tanh'))
+       model.add(Dropout(0.1))
+       model.add(Dense(self.numTestPoints, activation='tanh'))
+       model.compile(loss='mean_squared_error', optimizer='adam')
+       return model
     
     def predict(self):
-               
-        if self.numSeasons==1: 
-            smooth = DoubleExponentialPredictionMethod(self.data, self.numTrainPoints)        
-        else:
-            smooth = TripleExponentialPredictionMethod(self.data, self.numTrainPoints, numSeasons=self.numSeasons)
-        
-        smoothData = smooth.predict()
-        
         npData = np.array(self.data)
         #print(npData)
        
@@ -58,8 +53,8 @@ class AveragedRNNExponentialPredictionMethod(NeuralNetworkPredictionMethod):
         npTestInput = np.array(npScaledData[:-self.numTestPoints]).reshape(-1,1)
        
         
-        model = self.constructModel(self.numAllPoints)
-        model.fit(x=npTrainInput, y=npTrainOutput, epochs=1000)
+        model = self.constructModel()
+        model.fit(x=npTrainInput, y=npTrainOutput, epochs=2000)
         
         rawPredicted = model.predict(npTestInput)
        
@@ -79,9 +74,7 @@ class AveragedRNNExponentialPredictionMethod(NeuralNetworkPredictionMethod):
         predicted = predicted.reshape(-1)
         predicted = np.insert(predicted, 0, np.NaN)
         
-        average = (smoothData + predicted.flatten())/2
-        
-        self.prediction = average
+        self.prediction = predicted.flatten()
         
         return self.prediction
 

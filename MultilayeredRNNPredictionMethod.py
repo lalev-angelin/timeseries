@@ -24,8 +24,10 @@ class MultilayeredRNNPredictionMethod(PredictionMethod):
         if self.numNeurons[0] == None: 
            rnn1NeuronCount = self.numAllPoints * 2
            model = Sequential()
-           model.add(SimpleRNN(rnn1NeuronCount, input_shape=(1,1), activation='tanh'))
-           model.add(Dense(units=self.numTestPoints, activation='tanh'))
+           model.add(SimpleRNN(20, input_shape=(1,1), return_sequences=True, activation='tanh'))
+           model.add(SimpleRNN(20, return_sequences=True, activation='tanh'))
+           model.add(SimpleRNN(1, return_sequences=True, activation='tanh'))
+
            model.compile(loss='mean_squared_error', optimizer='adam')
         else:
            sys.exit(1)

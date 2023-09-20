@@ -15,6 +15,7 @@ from SimpleRNNPredictionMethod import SimpleRNNPredictionMethod
 from SimpleLSTMPredictionMethod import SimpleLSTMPredictionMethod
 from CombinedRNNPredictionMethod import CombinedRNNPredictionMethod
 from AveragedRNNExponentialPredictionMethod import AveragedRNNExponentialPredictionMethod
+from FeedForwardPredictionMethod import FeedForwardPredictionMethod
 import pandas as pd
 
 ### ЗАРЕЖДАНЕ НА ДАННИТЕ
@@ -82,26 +83,26 @@ for q in range (260, 270):
     resultData.at[q, 'ma_mape']=average.computeMAPE()
     resultData.at[q, 'ma_wmape']=average.computeWMAPE()
 
-    # Просто експоненциално изглаждане
-    exponential = ExponentialPredictionMethod(row, datapoints)
-    prediction = exponential.predict()
-    plt.plot(prediction, color="magenta", label="Exp. smoothing $\\alpha=%s$, MAPE=%s, wMAPE=%s" % 
-              (exponential.hwresults.params['smoothing_level'], exponential.computeMAPE(), exponential.computeWMAPE()))
-    plt.legend()
+    # # Просто експоненциално изглаждане
+    # exponential = ExponentialPredictionMethod(row, datapoints)
+    # prediction = exponential.predict()
+    # plt.plot(prediction, color="magenta", label="Exp. smoothing $\\alpha=%s$, MAPE=%s, wMAPE=%s" % 
+    #           (exponential.hwresults.params['smoothing_level'], exponential.computeMAPE(), exponential.computeWMAPE()))
+    # plt.legend()
 
-    resultData.at[q, 'es_mape']=exponential.computeMAPE()
-    resultData.at[q, 'es_wmape']=exponential.computeWMAPE()
+    # resultData.at[q, 'es_mape']=exponential.computeMAPE()
+    # resultData.at[q, 'es_wmape']=exponential.computeWMAPE()
 
     
-    # Двойно експоненциално изглаждане
-    holt = DoubleExponentialPredictionMethod(row, datapoints)
-    prediction = holt.predict()
-    plt.plot(prediction, color="black", label="Exp. smoothing $\\alpha=%s$, $\\beta=%s$, MAPE=%s, wMAPE=%s" % 
-              (holt.hwresults.params['smoothing_level'], holt.hwresults.params['smoothing_trend'], holt.computeMAPE(), holt.computeWMAPE()))
-    plt.legend()
+    # # Двойно експоненциално изглаждане
+    # holt = DoubleExponentialPredictionMethod(row, datapoints)
+    # prediction = holt.predict()
+    # plt.plot(prediction, color="black", label="Exp. smoothing $\\alpha=%s$, $\\beta=%s$, MAPE=%s, wMAPE=%s" % 
+    #           (holt.hwresults.params['smoothing_level'], holt.hwresults.params['smoothing_trend'], holt.computeMAPE(), holt.computeWMAPE()))
+    # plt.legend()
 
-    resultData.at[q, 'holt_mape']=holt.computeMAPE()
-    resultData.at[q, 'holt_wmape']=holt.computeWMAPE()
+    # resultData.at[q, 'holt_mape']=holt.computeMAPE()
+    # resultData.at[q, 'holt_wmape']=holt.computeWMAPE()
 
     # Тройно експоненциално изглаждане
     if seasonality>1:
@@ -135,24 +136,32 @@ for q in range (260, 270):
     resultData.at[q, 'simplelstm_mape']=simpleLSTM.computeMAPE()
     resultData.at[q, 'simplelstm_wmape']=simpleLSTM.computeWMAPE()
 
-    # Комбиниран RNN
-    combinedRNN = CombinedRNNPredictionMethod(row, datapoints, numSeasons=seasonality)
-    prediction = combinedRNN.predict()
-    plt.plot(prediction, color="darkgray", label="Combined RNN, MAPE=%s, wMAPE=%s" % (combinedRNN.computeMAPE(), combinedRNN.computeWMAPE()))
+    # # Комбиниран RNN
+    # combinedRNN = CombinedRNNPredictionMethod(row, datapoints, numSeasons=seasonality)
+    # prediction = combinedRNN.predict()
+    # plt.plot(prediction, color="darkgray", label="Combined RNN, MAPE=%s, wMAPE=%s" % (combinedRNN.computeMAPE(), combinedRNN.computeWMAPE()))
+    # plt.legend()
+    
+    # resultData.at[q, 'combinedrnn_mape']=combinedRNN.computeMAPE()
+    # resultData.at[q, 'combinedrnn_wmape']=combinedRNN.computeWMAPE()    
+
+    # # Усреднен RNN
+    # averagedRNN = AveragedRNNExponentialPredictionMethod(row, datapoints, numSeasons=seasonality)
+    # prediction = averagedRNN.predict()
+    # plt.plot(prediction, color="yellow", label="Averaged RNN, MAPE=%s, wMAPE=%s" % (averagedRNN.computeMAPE(), averagedRNN.computeWMAPE()))
+    # plt.legend()
+    
+    # resultData.at[q, 'averaged_mape']=averagedRNN.computeMAPE()
+    # resultData.at[q, 'averaged_wmape']=averagedRNN.computeWMAPE()    
+    # Проста LSTM
+    
+    feedfwd = FeedForwardPredictionMethod(row, datapoints)
+    prediction = feedfwd.predict()
+    plt.plot(prediction, color="brown", label="Simple LSTM, MAPE=%s, wMAPE=%s" % (feedfwd.computeMAPE(), feedfwd.computeWMAPE()))
     plt.legend()
     
-    resultData.at[q, 'combinedrnn_mape']=combinedRNN.computeMAPE()
-    resultData.at[q, 'combinedrnn_wmape']=combinedRNN.computeWMAPE()    
-
-    # Усреднен RNN
-    averagedRNN = AveragedRNNExponentialPredictionMethod(row, datapoints, numSeasons=seasonality)
-    prediction = averagedRNN.predict()
-    plt.plot(prediction, color="yellow", label="Averaged RNN, MAPE=%s, wMAPE=%s" % (averagedRNN.computeMAPE(), averagedRNN.computeWMAPE()))
-    plt.legend()
-    
-    resultData.at[q, 'averaged_mape']=averagedRNN.computeMAPE()
-    resultData.at[q, 'averaged_wmape']=averagedRNN.computeWMAPE()    
-
+    resultData.at[q, 'feedfwd_mape']=feedfwd.computeMAPE()
+    resultData.at[q, 'feedfwd_wmape']=feedfwd.computeWMAPE()
 
     pdf.savefig(fig)
 
