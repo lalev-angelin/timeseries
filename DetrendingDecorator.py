@@ -21,4 +21,5 @@ class DetrendingDecorator(PredictionMethod):
         return json.dumps(saveData, indent=2)
         
     def predict(self):
-        
+         self.originalData = self.data
+         

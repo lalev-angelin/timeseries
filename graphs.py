@@ -24,8 +24,6 @@ data = pd.read_csv('m1.csv', sep=',', decimal=".")
 
 pdf = PdfPages("graphs_m1.pdf")
 
-
-
 resultData = pd.DataFrame()
 
 #for q in range (0, len (data)):
