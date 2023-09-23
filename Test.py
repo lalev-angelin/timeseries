@@ -25,27 +25,28 @@ class Test(unittest.TestCase):
         
     def test_MovingAveragePredictionMethod(self):
         data=[0,1,2,3,4,5,6,7,8,9]
-        prediction = MovingAveragePredictionMethod(data, 9, window=3)
-        prediction.predict()
-        self.assertEqual(prediction.prediction, [cmath.nan, cmath.nan, cmath.nan, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 5.0])
+        method = MovingAveragePredictionMethod(data, 9, window=3)
+        method.predict()
+        self.assertEqual(method.prediction, [cmath.nan, cmath.nan, cmath.nan, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 5.0])
 
     def test_Mape(self):
         data=[0,1,2,3,4,5,6,7,8,9]
-        prediction = MovingAveragePredictionMethod(data, 7)
-        pred = prediction.predict()
-        self.assertEqual(prediction.computeMAPE(), 0.5906819517930629)
-        self.assertEqual(prediction.computeWMAPE(), [nan, nan, nan, 1.0, 2.0, 3.0, 4.0, 3.0, 3.3333333333333335, 3.4444444444444446])
+        method = MovingAveragePredictionMethod(data, 7)
+        pred = method.predict()
+        self.assertEqual(method.computeMAPE(), 0.5906819517930629)
+        self.assertEqual(method.computeWMAPE(), 0.5925925925925926)
         
     def test_PredictionMethodSave(self):
         data=[0,1,2,3,4,5,6,7,8,9]
-        prediction = MovingAveragePredictionMethod(data, 7)
-        pred = prediction.predict()
-        prediction.save('test.json')
+        method = MovingAveragePredictionMethod(data, 7)
+        pred = method.predict()
+        method.save('test.json')
         
     def test_DummyPredictionMethod(self):
         data=[0,1,2,3,4,5,6,7,8,9]
-        prediction = DummyPredictionMethod(data, 3)
-        self.assertEqual(prediction, [0,1,2,3,4,5,6,7,8,9])
+        method = DummyPredictionMethod(data, 3)
+        pred = method.predict()
+        self.assertEqual(pred, [0,1,2,3,4,5,6,7,8,9])
         
         
 if __name__ == '__main__':
