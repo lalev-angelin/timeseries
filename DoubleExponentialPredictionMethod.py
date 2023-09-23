@@ -25,8 +25,8 @@ class DoubleExponentialPredictionMethod(PredictionMethod):
     def getParameters(self): 
         params = {}
         params['extended_name']="Double exponential smoothing"
-        params['smooth_alpha']=self.alpha    
-        params['smooth_beta']=self.beta
+        params['smooth_alpha']=self.hwresults.params['smoothing_level']
+        params['smooth_beta']=self.hwresults.params['smoothing_trend']
         return params                
             
     def predict(self):
@@ -37,6 +37,9 @@ class DoubleExponentialPredictionMethod(PredictionMethod):
         else:
             self.hwresults = Holt(npdata, initialization_method='estimated').fit(smoothing_level=self.alpha, trend_level=self.beta, optimized=False)
             
+        self.alpha = self.hwresults.params['smoothing_level']
+        self.beta = self.hwresults.params['smoothing_trend']
+        self.gamma = self.hwresults.params['smoothing_seasonal']    
 
         self.prediction = self.hwresults.predict(start=0, end=self.numAllPoints-1)
         return self.prediction

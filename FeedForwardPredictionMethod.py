@@ -76,10 +76,10 @@ class FeedForwardPredictionMethod(PredictionMethod):
         npTestInput = np.array(npScaledData[:-self.numTestPoints]).reshape(-1,1)
        
         
-        model = self.constructModel()
-        model.fit(x=npTrainInput, y=npTrainOutput, epochs=2000)
+        self.model = self.constructModel()
+        self.model.fit(x=npTrainInput, y=npTrainOutput, epochs=2000)
         
-        rawPredicted = model.predict(npTestInput)
+        rawPredicted = self.model.predict(npTestInput)
        
         predictedFirst = np.take(rawPredicted, 0, axis=1)
 
@@ -101,4 +101,7 @@ class FeedForwardPredictionMethod(PredictionMethod):
         
         return self.prediction
 
+
+    def saveModel(self, fileName):
+        self.model.save(fileName)
     

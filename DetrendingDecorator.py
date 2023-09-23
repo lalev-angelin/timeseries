@@ -8,6 +8,7 @@ from PredictionMethod import PredictionMethod
 from sklearn.linear_model import LinearRegression
 import numpy as np
 import json
+from NeuralNetworkPredictionMethod import NeuralNetworkPredictionMethod
 
 class DetrendingDecorator(PredictionMethod):
     def __init__(self, method):
@@ -39,3 +40,7 @@ class DetrendingDecorator(PredictionMethod):
          self.prediction = self.prediction + self.correction
          
          return self.prediction.tolist() 
+     
+    def saveModel(self, filename):
+        if isinstance(self.method, NeuralNetworkPredictionMethod):
+            self.method.save(filename)

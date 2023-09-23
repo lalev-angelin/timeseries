@@ -38,9 +38,9 @@ class TripleExponentialPredictionMethod(PredictionMethod):
     def getParameters(self): 
         params = {}
         params['extended_name']="Double/Triple (for seasonal data) Exponential smoothing"
-        params['smooth_alpha']=self.alpha    
+        params['smooth_alpha']=self.alpha
         params['smooth_beta']=self.beta
-        params['smooth_gamma']=self.gamma 
+        params['smooth_gamma']=self.gamma
             
         
     def predict(self):
@@ -54,6 +54,9 @@ class TripleExponentialPredictionMethod(PredictionMethod):
             self.hwresults = ExponentialSmoothing(npdata, initialization_method='estimated',  trend="add", 
             seasonal="add", seasonal_periods=self.numSeasons).fit(smoothing_level=self.alpha, trend_level=self.beta, smoothing_seasonal=self.gamma, optimized=False)
             
+        self.alpha = self.hwresults.params['smoothing_level']
+        self.beta = self.hwresults.params['smoothing_trend']
+        self.gamma = self.hwresults.params['smoothing_seasonal']
 
         self.prediction = self.hwresults.predict(start=0, end=self.numAllPoints-1)
         return self.prediction

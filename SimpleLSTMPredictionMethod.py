@@ -15,14 +15,14 @@ Created on Mon Sep 18 10:17:02 2023
 """
 
 import numpy as np
-from PredictionMethod import PredictionMethod
+from NeuralNetworkPredictionMethod import NeuralNetworkPredictionMethod
 from keras.models import Sequential
 from keras.layers import Dense, SimpleRNN, LSTM
 from sklearn.preprocessing import MinMaxScaler
 import sys
 import cmath
 
-class SimpleLSTMPredictionMethod(PredictionMethod):
+class SimpleLSTMPredictionMethod(NeuralNetworkPredictionMethod):
     
     def constructModel(self, rnn1NeuronCount):
         rnn1NeuronCount = self.numAllPoints * 2
@@ -72,10 +72,10 @@ class SimpleLSTMPredictionMethod(PredictionMethod):
         npTestInput = np.array(npScaledData[:-self.numTestPoints]).reshape(-1,1)
        
         
-        model = self.constructModel(self.numAllPoints)
-        model.fit(x=npTrainInput, y=npTrainOutput, epochs=2000)
+        self.model = self.constructModel(self.numAllPoints)
+        self.model.fit(x=npTrainInput, y=npTrainOutput, epochs=2000)
         
-        rawPredicted = model.predict(npTestInput)
+        rawPredicted = self.model.predict(npTestInput)
        
         predictedFirst = np.take(rawPredicted, 0, axis=1)
 
@@ -97,4 +97,3 @@ class SimpleLSTMPredictionMethod(PredictionMethod):
         
         return self.prediction
 
-    

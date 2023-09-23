@@ -7,7 +7,7 @@ Created on Mon Sep 18 19:01:45 2023
 """
 
 import numpy as np
-from PredictionMethod import PredictionMethod
+from NeuralNetworkPredictionMethod import NeuralNetworkPredictionMethod
 from keras.models import Sequential
 from keras.layers import Dense, SimpleRNN
 from sklearn.preprocessing import MinMaxScaler
@@ -17,7 +17,7 @@ from DoubleExponentialPredictionMethod import DoubleExponentialPredictionMethod
 from TripleExponentialPredictionMethod import TripleExponentialPredictionMethod
 
 
-class AveragedRNNExponentialPredictionMethod(PredictionMethod):
+class AveragedRNNExponentialPredictionMethod(NeuralNetworkPredictionMethod):
     
     def predict(self):
                
@@ -27,6 +27,11 @@ class AveragedRNNExponentialPredictionMethod(PredictionMethod):
             smooth = TripleExponentialPredictionMethod(self.data, self.numTrainPoints, numSeasons=self.numSeasons)
         
         smoothData = smooth.predict()
+        
+        self.alpha = smooth.alpha
+        self.beta = smooth.beta
+        self.gamma = smooth.gamma
+        
         
         npData = np.array(self.data)
         #print(npData)
@@ -52,10 +57,10 @@ class AveragedRNNExponentialPredictionMethod(PredictionMethod):
         npTestInput = np.array(npScaledData[:-self.numTestPoints]).reshape(-1,1)
        
         
-        model = self.constructModel(self.numAllPoints)
-        model.fit(x=npTrainInput, y=npTrainOutput, epochs=1000)
+        self.model = self.constructModel(self.numAllPoints)
+        self.model.fit(x=npTrainInput, y=npTrainOutput, epochs=1000)
         
-        rawPredicted = model.predict(npTestInput)
+        rawPredicted = self.model.predict(npTestInput)
        
         predictedFirst = np.take(rawPredicted, 0, axis=1)
 
@@ -97,12 +102,15 @@ class AveragedRNNExponentialPredictionMethod(PredictionMethod):
         
         return model
 
-def getParameters(self): 
-    params = {}
-    params['extended_name']="Average of Double/Triple (for seasonal data) Exponential smoothing and Simple RNN"
-    params['smooth_alpha']=self.alpha    
-    params['smooth_beta']=self.beta
-    params['smooth_gamma']=self.gamma
-    params['rnn_layers']=self.layer_description
-
-    return params    
+    def getParameters(self): 
+        params = {}
+        params['extended_name']="Average of Double/Triple (for seasonal data) Exponential smoothing and Simple RNN"
+        params['smooth_alpha']=self.alpha    
+        params['smooth_beta']=self.beta
+        params['smooth_gamma']=self.gamma
+        params['rnn_layers']=self.layer_description
+    
+        return params    
+    
+    def saveModel(self, fileName):
+        self.model.save(fileName)

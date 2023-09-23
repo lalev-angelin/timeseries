@@ -7,6 +7,7 @@ Created on Sun Sep 17 20:22:45 2023
 """
 
 import json
+from OurJSONEncoder import OurJSONEncoder
 
 class PredictionMethod: 
 
@@ -26,20 +27,20 @@ class PredictionMethod:
     
     def toJSON(self):
         saveData = {}
-        saveData['method']=__class__.__name__
+        saveData['method']=self.__class__.__name__
         saveData['parameters']=self.getParameters()
         saveData['numDataPoints']=self.numAllPoints
         saveData['numTrainPoints']=self.numTrainPoints
         saveData['numTestPoints']=self.numTestPoints
         saveData['seasons']=self.numSeasons
-        saveData['data']=self.data
-        saveData['prediction']=self.prediction
+        saveData['data']=list(self.data)
+        saveData['prediction']=list(self.prediction)
         saveData['MAPE']=self.computeMAPE()
         saveData['wMAPE']=self.computeWMAPE()
-        return json.dumps(saveData, indent=2)
+        return json.dumps(saveData, indent=2, cls=OurJSONEncoder)
     
     ##############################################################
-    # Записва модела
+    # Записва данни за модела в JSON формат
     #
     def save(self, filename):
         str = self.toJSON() 
@@ -105,12 +106,13 @@ class PredictionMethod:
         assert(self.numTrainPoints<self.numAllPoints)
          
         self.numTestPoints = self.numAllPoints - self.numTrainPoints
-         
         self.numSeasons=numSeasons
 
         self.trainData = data[0:numTrainPoints]
         self.testData = data[numTrainPoints:]
 
-
+        print("numTestPoints:", self.numTestPoints)
+        print("numAllPoints:", self.numAllPoints)
+        print("numTrainPoints:", self.numTrainPoints)
          
     

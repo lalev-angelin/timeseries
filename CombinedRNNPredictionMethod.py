@@ -15,7 +15,7 @@ Created on Mon Sep 18 10:17:02 2023
 """
 
 import numpy as np
-from PredictionMethod import PredictionMethod
+from NeuralNetworkPredictionMethod import NeuralNetworkPredictionMethod
 from keras.models import Sequential
 from keras.layers import Dense, SimpleRNN
 from sklearn.preprocessing import MinMaxScaler
@@ -24,7 +24,7 @@ import cmath
 from DoubleExponentialPredictionMethod import DoubleExponentialPredictionMethod
 from TripleExponentialPredictionMethod import TripleExponentialPredictionMethod
 
-class CombinedRNNPredictionMethod(PredictionMethod):
+class CombinedRNNPredictionMethod(NeuralNetworkPredictionMethod):
     
     
     def constructModel(self, rnn1NeuronCount):
@@ -45,15 +45,15 @@ class CombinedRNNPredictionMethod(PredictionMethod):
         
         return model
     
-def getParameters(self): 
-    params = {}
-    params['extended_name']="Double/Triple (for seasonal data) Exponential smoothing fed as additional input to Simple RNN"
-    params['smooth_alpha']=self.alpha    
-    params['smooth_beta']=self.beta
-    params['smooth_gamma']=self.gamma
-    params['rnn_layers']=self.layer_description
-
-    return params        
+    def getParameters(self): 
+        params = {}
+        params['extended_name']="Double/Triple (for seasonal data) Exponential smoothing fed as additional input to Simple RNN"
+        params['smooth_alpha']=self.alpha    
+        params['smooth_beta']=self.beta
+        params['smooth_gamma']=self.gamma
+        params['rnn_layers']=self.layer_description
+    
+        return params        
     
     
     
@@ -99,10 +99,10 @@ def getParameters(self):
 
         npTrainInput = np.concatenate((npTrainInput, npTrainSmoothInput), axis=1) 
        
-        model = self.constructModel(self.numAllPoints)
-        model.fit(x=npTrainInput, y=npTrainOutput, epochs=2000)
+        self.model = self.constructModel(self.numAllPoints)
+        self.model.fit(x=npTrainInput, y=npTrainOutput, epochs=2000)
         
-        rawPredicted = model.predict(npTestInput)
+        rawPredicted = self.model.predict(npTestInput)
        
         predictedFirst = np.take(rawPredicted, 0, axis=1)
 
@@ -124,4 +124,6 @@ def getParameters(self):
         
         return self.prediction
 
-    
+    def saveModel(self, fileName):
+        self.model.save(fileName)
+        

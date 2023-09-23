@@ -7,19 +7,25 @@ Created on Mon Sep 18 10:17:02 2023
 """
 
 import numpy as np
-from PredictionMethod import PredictionMethod
+from NeuralNetworkPredictionMethod import NeuralNetworkPredictionMethod
 from keras.models import Sequential
 from keras.layers import Dense, SimpleRNN, LSTM
 from sklearn.preprocessing import MinMaxScaler
 import sys
 import cmath
 
-class SimpleRNNPredictionMethod(PredictionMethod):
+class SimpleRNNPredictionMethod(NeuralNetworkPredictionMethod):
     
     def __init__(self, data, numTrainPoints, numSeasons=1, numNeurons=(None, None, None)):
         super().__init__(data, numTrainPoints, numSeasons)
         self.numNeurons = numNeurons
-    
+       
+    def getParameters(self): 
+        params = {}
+        params['extended_name']="Simple Recurrent Neural Network"
+        params['layers']=self.layer_description
+        return params       
+     
     def constructModel(self):
         if self.numNeurons[0] == None: 
            rnn1NeuronCount = self.numAllPoints * 2
@@ -27,10 +33,22 @@ class SimpleRNNPredictionMethod(PredictionMethod):
            model.add(SimpleRNN(rnn1NeuronCount, input_shape=(1,1), activation='tanh'))
            model.add(Dense(units=self.numTestPoints, activation='tanh'))
            model.compile(loss='mean_squared_error', optimizer='adam')
+           
+           self.layer_description={}
+           self.layer_description['layer1_type']="SimpleRNN"
+           self.layer_description['layer1_neuron_count']=rnn1NeuronCount
+           self.layer_description['layer1_activation']="tanh"
+           self.layer_description['layer2_type']="Dense"
+           self.layer_description['layer2_neuron_count']=self.numTestPoints
+           self.layer_description['layer2_activation']="tanh"
+           self.layer_description['loss']="mean_squared_error"
+           self.layer_description['optimizer']='adam'
+           
         else:
            sys.exit(1)
            
         return model
+
     
     def predict(self):
         npData = np.array(self.data)
@@ -57,10 +75,10 @@ class SimpleRNNPredictionMethod(PredictionMethod):
         npTestInput = np.array(npScaledData[:-self.numTestPoints]).reshape(-1,1)
        
         
-        model = self.constructModel()
-        model.fit(x=npTrainInput, y=npTrainOutput, epochs=2000)
+        self.model = self.constructModel()
+        self.model.fit(x=npTrainInput, y=npTrainOutput, epochs=2000)
         
-        rawPredicted = model.predict(npTestInput)
+        rawPredicted = self.model.predict(npTestInput)
        
         predictedFirst = np.take(rawPredicted, 0, axis=1)
 
