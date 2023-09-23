@@ -26,7 +26,7 @@ class PredictionMethod:
     
     def toJSON(self):
         saveData = {}
-        saveData['method']=self.getMethod()
+        saveData['method']=__class__.__name__
         saveData['parameters']=self.getParameters()
         saveData['numDataPoints']=self.numAllPoints
         saveData['numTrainPoints']=self.numTrainPoints

@@ -19,13 +19,6 @@ from TripleExponentialPredictionMethod import TripleExponentialPredictionMethod
 
 class AveragedRNNExponentialPredictionMethod(PredictionMethod):
     
-    def constructModel(self, rnn1NeuronCount):
-        model = Sequential()
-        model.add(SimpleRNN(rnn1NeuronCount, input_shape=(1,1), activation='tanh'))
-        model.add(Dense(units=self.numTestPoints, activation='tanh'))
-        model.compile(loss='mean_squared_error', optimizer='adam')
-        return model
-    
     def predict(self):
                
         if self.numSeasons==1: 
@@ -86,13 +79,30 @@ class AveragedRNNExponentialPredictionMethod(PredictionMethod):
         
         return self.prediction
 
-def getMethod(self):
-    return "AveragedRNNExponentialPredictionMethod"
+    def constructModel(self, rnn1NeuronCount):
+        model = Sequential()
+        model.add(SimpleRNN(rnn1NeuronCount, input_shape=(1,1), activation='tanh'))
+        model.add(Dense(units=self.numTestPoints, activation='tanh'))
+        model.compile(loss='mean_squared_error', optimizer='adam')
+
+        self.layer_description={}
+        self.layer_description['layer1_type']="SimpleRNN"
+        self.layer_description['layer1_neuron_count']=rnn1NeuronCount
+        self.layer_description['layer1_activation']="tanh"
+        self.layer_description['layer2_type']="Dense"
+        self.layer_description['layer2_neuron_count']=self.numTestPoints
+        self.layer_description['layer2_activation']="tanh"
+        self.layer_description['loss']="mean_squared_error"
+        self.layer_description['optimizer']='adam'
+        
+        return model
 
 def getParameters(self): 
     params = {}
     params['extended_name']="Average of Double/Triple (for seasonal data) Exponential smoothing and Simple RNN"
-    params['alpha']=self.alpha    
-    params['beta']=self.beta
-    params['gamma']=self.gamma
+    params['smooth_alpha']=self.alpha    
+    params['smooth_beta']=self.beta
+    params['smooth_gamma']=self.gamma
+    params['rnn_layers']=self.layer_description
+
     return params    

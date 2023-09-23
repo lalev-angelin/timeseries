@@ -26,7 +26,30 @@ class FeedForwardPredictionMethod(PredictionMethod):
        model.add(Dropout(0.1))
        model.add(Dense(self.numTestPoints, activation='tanh'))
        model.compile(loss='mean_squared_error', optimizer='adam')
+       
+       self.layer_description={}
+       self.layer_description['layer1_type']="Dense"
+       self.layer_description['layer1_neuron_count']=20
+       self.layer_description['layer1_activation']="tanh"
+       self.layer_description['layer2_type']="Dropout"
+       self.layer_description['layer2_dropout']="0.1"
+       self.layer_description['layer3_type']="Dense"
+       self.layer_description['layer3_neuron_count']=20
+       self.layer_description['layer3_activation']="tanh"
+       self.layer_description['layer4_type']="Dropout"
+       self.layer_description['layer4_dropout']="0.1"
+       self.layer_description['layer5_type']="Dense"
+       self.layer_description['layer5_neuron_count']=self.numTestPoints
+       self.layer_description['loss']="mean_squared_error"
+       self.layer_description['optimizer']='adam'
+       
        return model
+
+    def getParameters(self): 
+        params = {}
+        params['extended_name']="Multy-layered feed-forward neural network"
+        params['layers']=self.layer_description    
+        return params   
     
     def predict(self):
         npData = np.array(self.data)

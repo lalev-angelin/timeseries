@@ -30,7 +30,23 @@ class SimpleLSTMPredictionMethod(PredictionMethod):
         model.add(LSTM(rnn1NeuronCount, input_shape=(1,1), activation='tanh'))
         model.add(Dense(units=self.numTestPoints, activation='tanh'))
         model.compile(loss='mean_squared_error', optimizer='adam')
+        
+        self.layer_description={}
+        self.layer_description['layer1_type']="LSTM"
+        self.layer_description['layer1_neuron_count']=rnn1NeuronCount
+        self.layer_description['layer1_activation']="tanh"
+        self.layer_description['layer2_type']="Dense"
+        self.layer_description['layer2_neuron_count']=self.numTestPoints
+        self.layer_description['layer2_activation']="tanh"
+        self.layer_description['loss']="mean_squared_error"
+        self.layer_description['optimizer']='adam'
+        
         return model
+    
+    def getParameters(self): 
+        params = {}
+        params['extended_name']="LSTM neural network"
+        params['layers']=self.layer_description
     
     def predict(self):
         npData = np.array(self.data)

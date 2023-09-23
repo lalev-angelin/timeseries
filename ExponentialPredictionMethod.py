@@ -16,6 +16,12 @@ class ExponentialPredictionMethod(PredictionMethod):
         super().__init__(data, numTrainPoints, numSeasons)
         self.alpha = alpha
     
+    def getParameters(self): 
+        params = {}
+        params['extended_name']="Simple exponential smoothing"
+        params['smooth_alpha']=self.alpha    
+        return params       
+    
     def predict(self):
         
         npdata = np.array(self.trainData)

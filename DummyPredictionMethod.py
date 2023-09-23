@@ -14,4 +14,8 @@ class DummyPredictionMethod(PredictionMethod):
         self.prediction = self.data
         return self.prediction
     
+    def getParameters(self): 
+        params = {}
+        params['extended_name']="Dummy prediction method for testing. Returns the data as prediction"
+        return params       
     

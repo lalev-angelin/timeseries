@@ -33,8 +33,16 @@ class TripleExponentialPredictionMethod(PredictionMethod):
         if self.alpha!=None:
             assert self.beta!=None
             assert self.gamma!=None
+      
             
+    def getParameters(self): 
+        params = {}
+        params['extended_name']="Double/Triple (for seasonal data) Exponential smoothing"
+        params['smooth_alpha']=self.alpha    
+        params['smooth_beta']=self.beta
+        params['smooth_gamma']=self.gamma 
             
+        
     def predict(self):
         
         npdata = np.array(self.trainData)

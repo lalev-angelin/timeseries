@@ -21,10 +21,15 @@ class DoubleExponentialPredictionMethod(PredictionMethod):
             assert self.beta==None
         else:
             assert self.beta!=None
-            
+        
+    def getParameters(self): 
+        params = {}
+        params['extended_name']="Double exponential smoothing"
+        params['smooth_alpha']=self.alpha    
+        params['smooth_beta']=self.beta
+        return params                
             
     def predict(self):
-        
         npdata = np.array(self.trainData)
         
         if (self.alpha==None):

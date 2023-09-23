@@ -32,7 +32,30 @@ class CombinedRNNPredictionMethod(PredictionMethod):
         model.add(SimpleRNN(rnn1NeuronCount, input_shape=(2,1), activation='tanh'))
         model.add(Dense(units=self.numTestPoints, activation='tanh'))
         model.compile(loss='mean_squared_error', optimizer='adam')
+        
+        self.layer_description={}
+        self.layer_description['layer1_type']="SimpleRNN"
+        self.layer_description['layer1_neuron_count']=rnn1NeuronCount
+        self.layer_description['layer1_activation']="tanh"
+        self.layer_description['layer2_type']="Dense"
+        self.layer_description['layer2_neuron_count']=self.numTestPoints
+        self.layer_description['layer2_activation']="tanh"
+        self.layer_description['loss']="mean_squared_error"
+        self.layer_description['optimizer']='adam'
+        
         return model
+    
+def getParameters(self): 
+    params = {}
+    params['extended_name']="Double/Triple (for seasonal data) Exponential smoothing fed as additional input to Simple RNN"
+    params['smooth_alpha']=self.alpha    
+    params['smooth_beta']=self.beta
+    params['smooth_gamma']=self.gamma
+    params['rnn_layers']=self.layer_description
+
+    return params        
+    
+    
     
     def predict(self):
         scaler = MinMaxScaler(feature_range=(-1,1))

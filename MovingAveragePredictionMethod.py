@@ -23,7 +23,12 @@ class MovingAveragePredictionMethod(PredictionMethod):
         assert window>0
         assert window<self.numAllPoints
         self.window = window
-        
+
+    def getParameters(self): 
+        params = {}
+        params['extended_name']="Moving average"
+        params['window']=self.window
+        return params           
     
     def predict(self): 
         self.prediction = []
