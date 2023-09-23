@@ -108,7 +108,7 @@ class PredictionMethod:
         self.numTestPoints = self.numAllPoints - self.numTrainPoints
         self.numSeasons=numSeasons
 
-        self.trainData = data[0:numTrainPoints]
-        self.testData = data[numTrainPoints:]
+        self.trainData = data[0:self.numTrainPoints]
+        self.testData = data[self.numTrainPoints:]
 
     

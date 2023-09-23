@@ -12,4 +12,4 @@ class NeuralNetworkPredictionMethod(PredictionMethod):
     
   
     def saveModel(self, fileName):
-        self.model.save(filename)
+        self.model.save(fileName)

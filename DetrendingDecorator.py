@@ -15,6 +15,19 @@ class DetrendingDecorator(PredictionMethod):
         self.method = method
         self.data = method.data
         
+        self.numAllPoints=method.numAllPoints
+        assert(self.numAllPoints>0)
+         
+        self.numTrainPoints=method.numTrainPoints
+        assert(self.numTrainPoints>0)
+        assert(self.numTrainPoints<self.numAllPoints)
+         
+        self.numTestPoints = self.numAllPoints - self.numTrainPoints
+        self.numSeasons=method.numSeasons
+
+        self.trainData = method.data[0:self.numTrainPoints]
+        self.testData = method.data[self.numTrainPoints:]
+        
         
     def toJSON(self):
         str = self.method.toJSON();

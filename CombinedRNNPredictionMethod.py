@@ -68,6 +68,10 @@ class CombinedRNNPredictionMethod(NeuralNetworkPredictionMethod):
         # Изгладени данни с Холт или Холт-Уинтърс
         npSmoothData = smooth.predict()
         
+        self.alpha = smooth.hwresults.params['smoothing_level']
+        self.beta = smooth.hwresults.params['smoothing_trend']
+        self.gamma = smooth.hwresults.params['smoothing_seasonal']
+        
         # Мащабиране 
         npSmoothData = npSmoothData.reshape(-1, 1)
         npSmoothData = scaler.fit_transform(npSmoothData)

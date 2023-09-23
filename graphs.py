@@ -137,7 +137,7 @@ for q in range (0, 10):
     prediction = simpleRNN.predict()
     simpleRNN.save("results/"+series_name+"/srnn.json")
     simpleRNN.saveModel("results/"+series_name+"/srnn.keras")
-    plt.plot(prediction, color="cyan", label="Simple RNN, MAPE=%s, wMAPE=%s" % (simpleRNN.computeMAPE(), simpleRNN.computeWMAPE()))
+    plt.plot(prediction, color="green", label="Simple RNN, MAPE=%s, wMAPE=%s" % (simpleRNN.computeMAPE(), simpleRNN.computeWMAPE()))
     plt.legend()
     
     resultData.at[q, 'simplernn_mape']=simpleRNN.computeMAPE()
@@ -169,33 +169,36 @@ for q in range (0, 10):
     averagedRNN = AveragedRNNExponentialPredictionMethod(row, datapoints, numSeasons=seasonality)
     prediction = averagedRNN.predict()
     averagedRNN.save("results/"+series_name+"/arnn.json")
+    averagedRNN.saveModel("results/"+series_name+"/crnn.keras")
     plt.plot(prediction, color="yellow", label="Averaged RNN, MAPE=%s, wMAPE=%s" % (averagedRNN.computeMAPE(), averagedRNN.computeWMAPE()))
     plt.legend()
     
     resultData.at[q, 'averaged_mape']=averagedRNN.computeMAPE()
     resultData.at[q, 'averaged_wmape']=averagedRNN.computeWMAPE()    
 
-    
-    plt.savefig("results/"+series_name+"/fig.png")
-    pdf.savefig(fig)
-    
     # RNN с детрендинг
     detrendedRNN = DetrendingDecorator(SimpleRNNPredictionMethod(row, datapoints))
     prediction = detrendedRNN.predict()
     detrendedRNN.save("results/"+series_name+"/detrended_rnn.json")
     detrendedRNN.saveModel("results/"+series_name+"/crnn.keras")
-    plt.plot(prediction, color="cyan", linestyle="--", label="Detrended RNN, MAPE=%s, wMAPE=%s" % (detrendedRNN.computeMAPE(), detrendedRNN.computeWMAPE()))
+    plt.plot(prediction, color="green", linestyle="--", label="Detrended RNN, MAPE=%s, wMAPE=%s" % (detrendedRNN.computeMAPE(), detrendedRNN.computeWMAPE()))
     plt.legend()
     
+    resultData.at[q, 'detrended_rnn_mape']=detrendedRNN.computeMAPE()
+    resultData.at[q, 'detrended_rnn_wmape']=detrendedRNN.computeWMAPE()   
     
     # RNN с Бокс-Кокс
     boxcoxRNN = BoxCoxDecorator(SimpleRNNPredictionMethod(row, datapoints))
     prediction = boxcoxRNN.predict()
     boxcoxRNN.save("results/"+series_name+"/boxcox_rnn.json")
-    plt.plot(prediction, color="cyan", linestyle="-.-", label="BoxCox RNN, MAPE=%s, wMAPE=%s" % (boxcoxRNN.computeMAPE(), boxcoxRNN.computeWMAPE()))
+    plt.plot(prediction, color="green", linestyle="-.", label="BoxCox RNN, MAPE=%s, wMAPE=%s" % (boxcoxRNN.computeMAPE(), boxcoxRNN.computeWMAPE()))
     plt.legend()
+    
+    resultData.at[q, 'boxcox_rnn_mape']=boxcoxRNN.computeMAPE()
+    resultData.at[q, 'boxcox_rnn_wmape']=boxcoxRNN.computeWMAPE()   
 
-
+    plt.savefig("results/"+series_name+"/fig.png")
+    pdf.savefig(fig)
 
 
 pdf.close()
