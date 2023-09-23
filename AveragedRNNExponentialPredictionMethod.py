@@ -16,7 +16,8 @@ import cmath
 from DoubleExponentialPredictionMethod import DoubleExponentialPredictionMethod 
 from TripleExponentialPredictionMethod import TripleExponentialPredictionMethod
 
-class AveragedRNNExponentialPredictionMethod(NeuralNetworkPredictionMethod):
+
+class AveragedRNNExponentialPredictionMethod(PredictionMethod):
     
     def constructModel(self, rnn1NeuronCount):
         model = Sequential()
@@ -44,7 +45,7 @@ class AveragedRNNExponentialPredictionMethod(NeuralNetworkPredictionMethod):
         npScaledData = scaler.fit_transform(npScaledData)
         npScaledData = npScaledData.reshape(-1)
         
-        # Не можем да влизаме в тестовото множество
+        # Не можем да влизаме в тестовото множество,
         # a искаме да правим прогноза, обхващаща 
         # numTestPoints периода напред
         npTrainInput = np.array(npScaledData[:-2*self.numTestPoints]).reshape(-1,1)
@@ -85,4 +86,13 @@ class AveragedRNNExponentialPredictionMethod(NeuralNetworkPredictionMethod):
         
         return self.prediction
 
-    
+def getMethod(self):
+    return "AveragedRNNExponentialPredictionMethod"
+
+def getParameters(self): 
+    params = {}
+    params['extended_name']="Average of Double/Triple (for seasonal data) Exponential smoothing and Simple RNN"
+    params['alpha']=self.alpha    
+    params['beta']=self.beta
+    params['gamma']=self.gamma
+    return params    

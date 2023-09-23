@@ -26,11 +26,12 @@ class PredictionMethod:
     
     def toJSON(self):
         saveData = {}
-        saveData['title']="INSERT MODEL NAME HERE"
-        saveData['method']="INSERT METHOD HERE"
+        saveData['method']=self.getMethod()
+        saveData['parameters']=self.getParameters()
         saveData['numDataPoints']=self.numAllPoints
         saveData['numTrainPoints']=self.numTrainPoints
         saveData['numTestPoints']=self.numTestPoints
+        saveData['seasons']=self.numSeasons
         saveData['data']=self.data
         saveData['prediction']=self.prediction
         saveData['MAPE']=self.computeMAPE()
