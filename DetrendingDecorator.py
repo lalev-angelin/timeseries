@@ -33,7 +33,9 @@ class DetrendingDecorator(PredictionMethod):
          self.correction = model.predict(X)
          self.data = self.data - self.correction
          
+         self.method.data = self.data
          self.prediction = self.method.predict()
-         
+                  
          self.prediction = self.prediction + self.correction
-         return self.prediction 
+         
+         return self.prediction.tolist() 

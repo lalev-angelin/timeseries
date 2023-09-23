@@ -12,6 +12,7 @@ from DummyPredictionMethod import DummyPredictionMethod
 from DetrendingDecorator import DetrendingDecorator
 import unittest
 import cmath
+import numpy
 
 class Test(unittest.TestCase): 
     def test_PredictionMethod(self): 
@@ -51,12 +52,11 @@ class Test(unittest.TestCase):
         
     def test_DetrendingDecorator1(self):
         data=[0,1,2,3,4,5,6,7,8,9]
+        output=[cmath.nan,cmath.nan,cmath.nan,3,4,5,6,7,8,9]
         method = DetrendingDecorator(MovingAveragePredictionMethod(data, 7))
-        prediction = method.predict()
-        print(method.originalData)
-        print(method.data)
-        print(method.correction)
-        print(prediction)
+        pred = method.predict()
+        for i in range(0, len(data)):
+            numpy.testing.assert_almost_equal(pred[i], output[i])
         
 if __name__ == '__main__':
     unittest.main()
