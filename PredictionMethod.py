@@ -111,8 +111,4 @@ class PredictionMethod:
         self.trainData = data[0:numTrainPoints]
         self.testData = data[numTrainPoints:]
 
-        print("numTestPoints:", self.numTestPoints)
-        print("numAllPoints:", self.numAllPoints)
-        print("numTrainPoints:", self.numTrainPoints)
-         
     

@@ -136,6 +136,7 @@ for q in range (0, 10):
     simpleRNN = SimpleRNNPredictionMethod(row, datapoints)
     prediction = simpleRNN.predict()
     simpleRNN.save("results/"+series_name+"/srnn.json")
+    simpleRNN.saveModel("results/"+series_name+"/srnn.keras")
     plt.plot(prediction, color="cyan", label="Simple RNN, MAPE=%s, wMAPE=%s" % (simpleRNN.computeMAPE(), simpleRNN.computeWMAPE()))
     plt.legend()
     
@@ -146,6 +147,7 @@ for q in range (0, 10):
     simpleLSTM = SimpleLSTMPredictionMethod(row, datapoints)
     prediction = simpleLSTM.predict()
     simpleLSTM.save("results/"+series_name+"/slstm.json")
+    simpleLSTM.saveModel("results/"+series_name+"/slstm.keras")
     plt.plot(prediction, color="brown", label="Simple LSTM, MAPE=%s, wMAPE=%s" % (simpleLSTM.computeMAPE(), simpleLSTM.computeWMAPE()))
     plt.legend()
     
@@ -155,7 +157,8 @@ for q in range (0, 10):
     # Комбиниран RNN
     combinedRNN = CombinedRNNPredictionMethod(row, datapoints, numSeasons=seasonality)
     prediction = combinedRNN.predict()
-    simpleLSTM.save("results/"+series_name+"/crnn.json")
+    combinedRNN.save("results/"+series_name+"/crnn.json")
+    combinedRNN.saveModel("results/"+series_name+"/crnn.keras")
     plt.plot(prediction, color="darkgray", label="Combined RNN, MAPE=%s, wMAPE=%s" % (combinedRNN.computeMAPE(), combinedRNN.computeWMAPE()))
     plt.legend()
     
@@ -180,6 +183,7 @@ for q in range (0, 10):
     detrendedRNN = DetrendingDecorator(SimpleRNNPredictionMethod(row, datapoints))
     prediction = detrendedRNN.predict()
     detrendedRNN.save("results/"+series_name+"/detrended_rnn.json")
+    detrendedRNN.saveModel("results/"+series_name+"/crnn.keras")
     plt.plot(prediction, color="cyan", linestyle="--", label="Detrended RNN, MAPE=%s, wMAPE=%s" % (detrendedRNN.computeMAPE(), detrendedRNN.computeWMAPE()))
     plt.legend()
     

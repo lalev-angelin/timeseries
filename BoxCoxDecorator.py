@@ -4,13 +4,17 @@ Created on Wed Sep 20 15:35:10 2023
 
 @author: a.lalev
 """
+
 from PredictionMethod import PredictionMethod
+from NeuralNetworkPredictionMethod import NeuralNetworkPredictionMethod
 from sklearn.linear_model import LinearRegression
+from scipy.stats import boxcox
+from scipy.special import inv_boxcox
+
 import numpy as np
 import json
-from NeuralNetworkPredictionMethod import NeuralNetworkPredictionMethod
 
-class DetrendingDecorator(PredictionMethod):
+class  BoxCoxDecorator(PredictionMethod):
     def __init__(self, method):
         self.method = method
         self.data = method.data
@@ -19,25 +23,18 @@ class DetrendingDecorator(PredictionMethod):
     def toJSON(self):
         str = self.method.toJSON();
         saveData = json.loads(str)
-        saveData['detrend_applied']='true'
-        saveData['detrend_type']='linear'
+        saveData['boxcox_applied']='true'
+        saveData['boxcox_lambda']=self.boxcox_lamda
         return json.dumps(saveData, indent=2)
         
     def predict(self):
          self.originalData = self.data
+       
+         transformedData = boxcox(self.data)
          
-         X = np.arange(0, len(self.data))
-         X = X.reshape(-1,1)
-         
-         model = LinearRegression().fit(X, self.data)
-         
-         self.correction = model.predict(X)
-         self.data = self.data - self.correction
-         
-         self.method.data = self.data
+         self.method.data, self.boxcox_lamda = transformedData
          self.prediction = self.method.predict()
-                  
-         self.prediction = self.prediction + self.correction
+         self.prediction = inv_boxcox(self.prediction, self.boxcox_lamda)
          
          return self.prediction.tolist() 
      
