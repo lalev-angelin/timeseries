@@ -6,12 +6,13 @@ Created on Wed Sep 20 15:35:10 2023
 """
 from PredictionMethod import PredictionMethod
 from sklearn.linear_model import LinearRegression
+import numpy as np
 import json
 
 class DetrendingDecorator(PredictionMethod):
-    def __init__(self, method, data, numTrainPoints, numSeasons=1):
-        super().__init__(self, data, numTrainPoints)
+    def __init__(self, method):
         self.method = method
+        self.data = method.data
         
         
     def toJSON(self):
@@ -23,9 +24,13 @@ class DetrendingDecorator(PredictionMethod):
         
     def predict(self):
          self.originalData = self.data
-         model = LinearRegression().fit(range(0, len(self.data)), self.data)
-         self.r_sqared = model.r_sqared
-         self.correction = model.predict(range(0, len(self.data)))
+         
+         X = np.arange(0, len(self.data))
+         X = X.reshape(-1,1)
+         
+         model = LinearRegression().fit(X, self.data)
+         
+         self.correction = model.predict(X)
          self.data = self.data - self.correction
          
          self.prediction = self.method.predict()

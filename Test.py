@@ -9,6 +9,7 @@ Created on Sun Sep 17 20:56:13 2023
 from PredictionMethod import PredictionMethod
 from MovingAveragePredictionMethod import MovingAveragePredictionMethod
 from DummyPredictionMethod import DummyPredictionMethod
+from DetrendingDecorator import DetrendingDecorator
 import unittest
 import cmath
 
@@ -48,6 +49,14 @@ class Test(unittest.TestCase):
         pred = method.predict()
         self.assertEqual(pred, [0,1,2,3,4,5,6,7,8,9])
         
+    def test_DetrendingDecorator1(self):
+        data=[0,1,2,3,4,5,6,7,8,9]
+        method = DetrendingDecorator(MovingAveragePredictionMethod(data, 7))
+        prediction = method.predict()
+        print(method.originalData)
+        print(method.data)
+        print(method.correction)
+        print(prediction)
         
 if __name__ == '__main__':
     unittest.main()
