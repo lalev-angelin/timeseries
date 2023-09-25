@@ -49,8 +49,8 @@ def compileStats(filename):
                 
             mape = data['MAPE']
             wmape = data['wMAPE']
-            resultData[row, descriptions[i]+"-MAPE"]=mape
-            resultData[row, descriptions[i]+"-WMAPE"]=wmape
+            resultData.at[row, descriptions[i]+"-MAPE"]=mape
+            resultData.at[row, descriptions[i]+"-WMAPE"]=wmape
             
             if (smallestMAPE>mape): 
                 smallestMAPE=mape
@@ -60,8 +60,8 @@ def compileStats(filename):
                 smallestwMAPE=wmape
                 smallestwMAPEDescription = descriptions[i]
          
-        resultData[row, 'minMAPE']=smallestMAPEDescription 
-        resultData[row, 'minwMAPE']=smallestwMAPEDescription
+        resultData.at[row, 'minMAPE']=smallestMAPEDescription 
+        resultData.at[row, 'minwMAPE']=smallestwMAPEDescription
         row = row + 1
         
     resultData.to_csv(filename)
