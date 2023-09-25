@@ -9,6 +9,7 @@ Created on Mon Sep 18 09:26:35 2023
 from PredictionMethod import PredictionMethod
 from statsmodels.tsa.api import Holt
 import numpy as np
+import math
 
 class DoubleExponentialPredictionMethod(PredictionMethod):
     
@@ -27,6 +28,7 @@ class DoubleExponentialPredictionMethod(PredictionMethod):
         params['extended_name']="Double exponential smoothing"
         params['smooth_alpha']=self.hwresults.params['smoothing_level']
         params['smooth_beta']=self.hwresults.params['smoothing_trend']
+        params['smooth_gamma']=math.nan
         return params                
             
     def predict(self):

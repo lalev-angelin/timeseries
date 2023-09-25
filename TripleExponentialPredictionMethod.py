@@ -41,6 +41,7 @@ class TripleExponentialPredictionMethod(PredictionMethod):
         params['smooth_alpha']=self.alpha
         params['smooth_beta']=self.beta
         params['smooth_gamma']=self.gamma
+        return params
             
         
     def predict(self):
