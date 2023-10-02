@@ -11,7 +11,7 @@ from MovingAveragePredictionMethod import MovingAveragePredictionMethod
 from ExponentialPredictionMethod import ExponentialPredictionMethod
 from DoubleExponentialPredictionMethod import DoubleExponentialPredictionMethod
 from TripleExponentialPredictionMethod import TripleExponentialPredictionMethod
-from SimpleRNNPredictionMethod import SimpleRNNPredictionMethod
+from SimpleRNNPredictionMethodFix import SimpleRNNPredictionMethodFix
 from SimpleLSTMPredictionMethod import SimpleLSTMPredictionMethod
 from CombinedRNNPredictionMethod import CombinedRNNPredictionMethod
 from AveragedRNNExponentialPredictionMethod import AveragedRNNExponentialPredictionMethod
@@ -21,10 +21,11 @@ from BoxCoxDecorator import BoxCoxDecorator
 
 import pandas as pd
 import os
+import sys
 
 ### ЗАРЕЖДАНЕ НА ДАННИТЕ
 
-data = pd.read_csv('m1.csv', sep=',', decimal=".")
+data = pd.read_csv('m1.csv', sep=';', decimal=".")
 
 pdf = PdfPages("results/graphs.pdf")
 
@@ -32,15 +33,18 @@ resultData = pd.DataFrame()
 
 #for q in range (0, len (data)):
 #for q in range (260, 270):
-for q in range (0, 10):
+for q in range (260, 270):
 
     # Номер на ред с данни
     rowno = q
     
     # Вземаме ред с данни
     row = data.iloc[rowno,7:].dropna()
-    print("row\n", row)
-    
+ 
+    # Този фикс не беше нужен, когато работихме под Linux
+    # Различна версия на библиотеките? Различно CSV?
+    row = row.astype('float')
+ 
     # datapoints ще съдържа броя на наблюденията
     datapoints = data.iloc[rowno,1]
     print("datapoints:", datapoints)
@@ -133,7 +137,7 @@ for q in range (0, 10):
 
 
     # Проста RNN
-    simpleRNN = SimpleRNNPredictionMethod(row, datapoints)
+    simpleRNN = SimpleRNNPredictionMethodFix(row, datapoints, window=2)
     prediction = simpleRNN.predict()
     simpleRNN.save("results/"+series_name+"/srnn.json")
     simpleRNN.saveModel("results/"+series_name+"/srnn.keras")
@@ -144,61 +148,61 @@ for q in range (0, 10):
     resultData.at[q, 'simplernn_wmape']=simpleRNN.computeWMAPE()
     
     # Проста LSTM
-    simpleLSTM = SimpleLSTMPredictionMethod(row, datapoints)
-    prediction = simpleLSTM.predict()
-    simpleLSTM.save("results/"+series_name+"/slstm.json")
-    simpleLSTM.saveModel("results/"+series_name+"/slstm.keras")
-    plt.plot(prediction, color="brown", label="Simple LSTM, MAPE=%s, wMAPE=%s" % (simpleLSTM.computeMAPE(), simpleLSTM.computeWMAPE()))
-    plt.legend()
+    # simpleLSTM = SimpleLSTMPredictionMethod(row, datapoints)
+    # prediction = simpleLSTM.predict()
+    # simpleLSTM.save("results/"+series_name+"/slstm.json")
+    # simpleLSTM.saveModel("results/"+series_name+"/slstm.keras")
+    # plt.plot(prediction, color="brown", label="Simple LSTM, MAPE=%s, wMAPE=%s" % (simpleLSTM.computeMAPE(), simpleLSTM.computeWMAPE()))
+    # plt.legend()
     
-    resultData.at[q, 'simplelstm_mape']=simpleLSTM.computeMAPE()
-    resultData.at[q, 'simplelstm_wmape']=simpleLSTM.computeWMAPE()
+    # resultData.at[q, 'simplelstm_mape']=simpleLSTM.computeMAPE()
+    # resultData.at[q, 'simplelstm_wmape']=simpleLSTM.computeWMAPE()
 
     # Комбиниран RNN
-    combinedRNN = CombinedRNNPredictionMethod(row, datapoints, numSeasons=seasonality)
-    prediction = combinedRNN.predict()
-    combinedRNN.save("results/"+series_name+"/crnn.json")
-    combinedRNN.saveModel("results/"+series_name+"/crnn.keras")
-    plt.plot(prediction, color="darkgray", label="Combined RNN, MAPE=%s, wMAPE=%s" % (combinedRNN.computeMAPE(), combinedRNN.computeWMAPE()))
-    plt.legend()
+    # combinedRNN = CombinedRNNPredictionMethod(row, datapoints, numSeasons=seasonality)
+    # prediction = combinedRNN.predict()
+    # combinedRNN.save("results/"+series_name+"/crnn.json")
+    # combinedRNN.saveModel("results/"+series_name+"/crnn.keras")
+    # plt.plot(prediction, color="darkgray", label="Combined RNN, MAPE=%s, wMAPE=%s" % (combinedRNN.computeMAPE(), combinedRNN.computeWMAPE()))
+    # plt.legend()
     
-    resultData.at[q, 'combinedrnn_mape']=combinedRNN.computeMAPE()
-    resultData.at[q, 'combinedrnn_wmape']=combinedRNN.computeWMAPE()    
+    # resultData.at[q, 'combinedrnn_mape']=combinedRNN.computeMAPE()
+    # resultData.at[q, 'combinedrnn_wmape']=combinedRNN.computeWMAPE()    
 
     # Усреднен RNN
-    averagedRNN = AveragedRNNExponentialPredictionMethod(row, datapoints, numSeasons=seasonality)
-    prediction = averagedRNN.predict()
-    averagedRNN.save("results/"+series_name+"/arnn.json")
-    averagedRNN.saveModel("results/"+series_name+"/crnn.keras")
-    plt.plot(prediction, color="yellow", label="Averaged RNN, MAPE=%s, wMAPE=%s" % (averagedRNN.computeMAPE(), averagedRNN.computeWMAPE()))
-    plt.legend()
+    # averagedRNN = AveragedRNNExponentialPredictionMethod(row, datapoints, numSeasons=seasonality)
+    # prediction = averagedRNN.predict()
+    # averagedRNN.save("results/"+series_name+"/arnn.json")
+    # averagedRNN.saveModel("results/"+series_name+"/crnn.keras")
+    # plt.plot(prediction, color="yellow", label="Averaged RNN, MAPE=%s, wMAPE=%s" % (averagedRNN.computeMAPE(), averagedRNN.computeWMAPE()))
+    # plt.legend()
     
-    resultData.at[q, 'averaged_mape']=averagedRNN.computeMAPE()
-    resultData.at[q, 'averaged_wmape']=averagedRNN.computeWMAPE()    
+    # resultData.at[q, 'averaged_mape']=averagedRNN.computeMAPE()
+    # resultData.at[q, 'averaged_wmape']=averagedRNN.computeWMAPE()    
 
     # RNN с детрендинг
-    detrendedRNN = DetrendingDecorator(SimpleRNNPredictionMethod(row, datapoints))
-    prediction = detrendedRNN.predict()
-    detrendedRNN.save("results/"+series_name+"/detrended_rnn.json")
-    detrendedRNN.saveModel("results/"+series_name+"/crnn.keras")
-    plt.plot(prediction, color="green", linestyle="--", label="Detrended RNN, MAPE=%s, wMAPE=%s" % (detrendedRNN.computeMAPE(), detrendedRNN.computeWMAPE()))
-    plt.legend()
+    # detrendedRNN = DetrendingDecorator(SimpleRNNPredictionMethod(row, datapoints))
+    # prediction = detrendedRNN.predict()
+    # detrendedRNN.save("results/"+series_name+"/detrended_rnn.json")
+    # detrendedRNN.saveModel("results/"+series_name+"/crnn.keras")
+    # plt.plot(prediction, color="green", linestyle="--", label="Detrended RNN, MAPE=%s, wMAPE=%s" % (detrendedRNN.computeMAPE(), detrendedRNN.computeWMAPE()))
+    # plt.legend()
     
-    resultData.at[q, 'detrended_rnn_mape']=detrendedRNN.computeMAPE()
-    resultData.at[q, 'detrended_rnn_wmape']=detrendedRNN.computeWMAPE()   
+    # resultData.at[q, 'detrended_rnn_mape']=detrendedRNN.computeMAPE()
+    # resultData.at[q, 'detrended_rnn_wmape']=detrendedRNN.computeWMAPE()   
     
     # RNN с Бокс-Кокс
-    boxcoxRNN = BoxCoxDecorator(SimpleRNNPredictionMethod(row, datapoints))
-    prediction = boxcoxRNN.predict()
-    boxcoxRNN.save("results/"+series_name+"/boxcox_rnn.json")
-    plt.plot(prediction, color="green", linestyle="-.", label="BoxCox RNN, MAPE=%s, wMAPE=%s" % (boxcoxRNN.computeMAPE(), boxcoxRNN.computeWMAPE()))
-    plt.legend()
+    # boxcoxRNN = BoxCoxDecorator(SimpleRNNPredictionMethod(row, datapoints))
+    # prediction = boxcoxRNN.predict()
+    # boxcoxRNN.save("results/"+series_name+"/boxcox_rnn.json")
+    # plt.plot(prediction, color="green", linestyle="-.", label="BoxCox RNN, MAPE=%s, wMAPE=%s" % (boxcoxRNN.computeMAPE(), boxcoxRNN.computeWMAPE()))
+    # plt.legend()
     
-    resultData.at[q, 'boxcox_rnn_mape']=boxcoxRNN.computeMAPE()
-    resultData.at[q, 'boxcox_rnn_wmape']=boxcoxRNN.computeWMAPE()   
+    # resultData.at[q, 'boxcox_rnn_mape']=boxcoxRNN.computeMAPE()
+    # resultData.at[q, 'boxcox_rnn_wmape']=boxcoxRNN.computeWMAPE()   
 
     plt.savefig("results/"+series_name+"/fig.png")
-    pdf.savefig(fig)
+    # pdf.savefig(fig)
 
 
 pdf.close()
