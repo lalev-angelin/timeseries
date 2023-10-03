@@ -69,12 +69,12 @@ class SimpleRNNPredictionMethodFix(NeuralNetworkPredictionMethod):
                 tmp.append(npScaledData[w])
             batchedInData=np.append(batchedInData, tmp)
         batchedInData = batchedInData.reshape(-1,self.window)     
-        print("Batched in data:\n", batchedInData)
+        #print("Batched in data:\n", batchedInData)
         
         batchedTrainInData = batchedInData[ : -2*self.numTestPoints]
         batchedTestInData = batchedInData[-self.numTestPoints-1 : -self.numTestPoints]
-        print("Batched train data:\n", batchedTrainInData)
-        print("Batched test data:\n", batchedTestInData)
+        #print("Batched train data:\n", batchedTrainInData)
+        #print("Batched test data:\n", batchedTestInData)
 
         batchedOutData = np.array([])
         for j in range(self.window, len(npScaledData)-self.numTestPoints+1):
@@ -83,31 +83,40 @@ class SimpleRNNPredictionMethodFix(NeuralNetworkPredictionMethod):
                 tmp.append(npScaledData[w])
             batchedOutData=np.append(batchedOutData, tmp)
         batchedOutData = batchedOutData.reshape(-1,self.numTestPoints)     
-        print("Batched out data:\n", batchedOutData)
+        #print("Batched out data dimensions:\n", batchedOutData.shape)
+        #print("Batched out data:\n", batchedOutData)
         batchedOutTrainData = batchedOutData [:-self.numTestPoints]
         batchedOutTestData = batchedOutData[:-1]
         
         self.model = self.constructModel()
-        self.model.fit(x=batchedTrainInData, y=batchedOutTrainData, epochs=2000)
+        self.model.fit(x=batchedTrainInData, y=batchedOutTrainData, epochs=2000, use_multiprocessing=True)
        
-        rawPredicted = self.model.predict(batchedInData[:-self.numTestPoints])
-        print("rawPredicted\n", rawPredicted)
+        predictionBase = batchedInData[:-self.numTestPoints]
+        #print("predictionBase dimensions\n", predictionBase.shape)
+        #print("predictionBase\n", predictionBase)
+        
+        rawPredicted = self.model.predict(predictionBase)
+        #print("rawPredicted dimensions\n", rawPredicted.shape)
+        #print("rawPredicted\n", rawPredicted)
         predictedFirst = np.take(rawPredicted, 0, axis=1)
  
 
-        print("Predicted_first dimensions:", predictedFirst.shape)
-        print(predictedFirst)
+        #print("Predicted_first dimensions:", predictedFirst.shape)
+        #print(predictedFirst)
 
         predictedLast = np.array(rawPredicted[-1:,1:]).reshape(-1)
-        print("Predicted_last dimensions:", predictedLast.shape)
-        print("Predicted_last:", predictedLast)
+        #print("Predicted_last dimensions:", predictedLast.shape)
+        #print("Predicted_last:", predictedLast)
 
         predicted = np.concatenate((predictedFirst, predictedLast))
+        #print("Predicted dimensions:", predicted.shape)
+        #print("Predicted:", predicted)
 
         predicted = predicted.reshape(-1,1)
         predicted = scaler.inverse_transform(predicted)
         predicted = predicted.reshape(-1)
-        predicted = np.insert(predicted, 0, np.NaN)
+        for i in range(0, self.window): 
+            predicted = np.insert(predicted, 0, np.NaN)
         
         self.prediction = predicted.flatten()
         
