@@ -16,9 +16,10 @@ import cmath
 
 class SimpleRNNPredictionMethod(NeuralNetworkPredictionMethod):
     
-    def __init__(self, data, numTrainPoints, numSeasons=1, numNeurons=(None, None, None)):
+    def __init__(self, data, numTrainPoints, numSeasons=1, numNeurons=(None, None, None), window=2):
         super().__init__(data, numTrainPoints, numSeasons)
         self.numNeurons = numNeurons
+        self.window = window
        
     def getParameters(self): 
         params = {}
@@ -30,7 +31,7 @@ class SimpleRNNPredictionMethod(NeuralNetworkPredictionMethod):
         if self.numNeurons[0] == None: 
            rnn1NeuronCount = self.numAllPoints * 2
            model = Sequential()
-           model.add(SimpleRNN(rnn1NeuronCount, input_shape=(1,1), activation='tanh'))
+           model.add(SimpleRNN(rnn1NeuronCount, input_shape=(self.window,1), activation='tanh'))
            model.add(Dense(units=self.numTestPoints, activation='tanh'))
            model.compile(loss='mean_squared_error', optimizer='adam')
            
@@ -61,40 +62,61 @@ class SimpleRNNPredictionMethod(NeuralNetworkPredictionMethod):
         npScaledData = scaler.fit_transform(npScaledData)
         npScaledData = npScaledData.reshape(-1)
         
-        # Не можем да влизаме в тестовото множество
-        # a искаме да правим прогноза, обхващаща 
-        # numTestPoints периода напред
-        npTrainInput = np.array(npScaledData[:-2*self.numTestPoints]).reshape(-1,1)
+        batchedInData = np.array([])
+        for j in range(0, len(npScaledData)-self.window+1):
+            tmp = []
+            for w in range(j, j+self.window): 
+                tmp.append(npScaledData[w])
+            batchedInData=np.append(batchedInData, tmp)
+        batchedInData = batchedInData.reshape(-1,self.window)     
+        #print("Batched in data:\n", batchedInData)
+        
+        batchedTrainInData = batchedInData[ : -2*self.numTestPoints]
+        batchedTestInData = batchedInData[-self.numTestPoints-1 : -self.numTestPoints]
+        #print("Batched train data:\n", batchedTrainInData)
+        #print("Batched test data:\n", batchedTestInData)
 
-        # Оформя изхода на групи от по predictions_plus_gap показатели
-        npBatchedOutput = np.array([npScaledData[i:i+self.numTestPoints] for i in range(0, self.numAllPoints-self.numTestPoints+1)])
-        
-        npTrainOutput = np.array(npBatchedOutput[1:-self.numTestPoints])
-        
-        
-        npTestInput = np.array(npScaledData[:-self.numTestPoints]).reshape(-1,1)
-       
+        batchedOutData = np.array([])
+        for j in range(self.window, len(npScaledData)-self.numTestPoints+1):
+            tmp = []
+            for w in range(j, j+self.numTestPoints): 
+                tmp.append(npScaledData[w])
+            batchedOutData=np.append(batchedOutData, tmp)
+        batchedOutData = batchedOutData.reshape(-1,self.numTestPoints)     
+        #print("Batched out data dimensions:\n", batchedOutData.shape)
+        #print("Batched out data:\n", batchedOutData)
+        batchedOutTrainData = batchedOutData [:-self.numTestPoints]
+        batchedOutTestData = batchedOutData[:-1]
         
         self.model = self.constructModel()
-        self.model.fit(x=npTrainInput, y=npTrainOutput, epochs=2000)
-        
-        rawPredicted = self.model.predict(npTestInput)
+        self.model.fit(x=batchedTrainInData, y=batchedOutTrainData, epochs=2000, use_multiprocessing=True)
        
+        predictionBase = batchedInData[:-self.numTestPoints]
+        #print("predictionBase dimensions\n", predictionBase.shape)
+        #print("predictionBase\n", predictionBase)
+        
+        rawPredicted = self.model.predict(predictionBase)
+        #print("rawPredicted dimensions\n", rawPredicted.shape)
+        #print("rawPredicted\n", rawPredicted)
         predictedFirst = np.take(rawPredicted, 0, axis=1)
+ 
 
-        #print("Predicted_first dimensions:", predicted_first.shape)
-        #print(predicted_first)
+        #print("Predicted_first dimensions:", predictedFirst.shape)
+        #print(predictedFirst)
 
-        predictedLast = np.array(rawPredicted[-1:,1:].reshape(-1))
-        #print("Predicted_last dimensions:", predicted_last.shape)
-        #print("Predicted_last:", predicted_last)
+        predictedLast = np.array(rawPredicted[-1:,1:]).reshape(-1)
+        #print("Predicted_last dimensions:", predictedLast.shape)
+        #print("Predicted_last:", predictedLast)
 
         predicted = np.concatenate((predictedFirst, predictedLast))
+        #print("Predicted dimensions:", predicted.shape)
+        #print("Predicted:", predicted)
 
         predicted = predicted.reshape(-1,1)
         predicted = scaler.inverse_transform(predicted)
         predicted = predicted.reshape(-1)
-        predicted = np.insert(predicted, 0, np.NaN)
+        for i in range(0, self.window): 
+            predicted = np.insert(predicted, 0, np.NaN)
         
         self.prediction = predicted.flatten()
         

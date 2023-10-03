@@ -11,7 +11,7 @@ from MovingAveragePredictionMethod import MovingAveragePredictionMethod
 from ExponentialPredictionMethod import ExponentialPredictionMethod
 from DoubleExponentialPredictionMethod import DoubleExponentialPredictionMethod
 from TripleExponentialPredictionMethod import TripleExponentialPredictionMethod
-from SimpleRNNPredictionMethodFix import SimpleRNNPredictionMethodFix
+from SimpleRNNPredictionMethod import SimpleRNNPredictionMethod
 from SimpleLSTMPredictionMethod import SimpleLSTMPredictionMethod
 from CombinedRNNPredictionMethod import CombinedRNNPredictionMethod
 from AveragedRNNExponentialPredictionMethod import AveragedRNNExponentialPredictionMethod
@@ -27,13 +27,13 @@ import sys
 
 data = pd.read_csv('m1.csv', sep=';', decimal=".")
 
-pdf = PdfPages("results/graphs.pdf")
+# pdf = PdfPages("results/graphs.pdf")
 
-resultData = pd.DataFrame()
+#resultData = pd.DataFrame()
 
 #for q in range (0, len (data)):
 #for q in range (260, 270):
-for q in range (260, 270):
+for q in range (0, len(data)):
 
     # Номер на ред с данни
     rowno = q
@@ -76,9 +76,9 @@ for q in range (260, 270):
         os.mkdir("results/"+series_name)
 
    
-    resultData.at[q, 'name']=series_name
-    resultData.at[q,'datapoints']=datapoints
-    resultData.at[q, 'future_predictions']=future_predictions
+    # resultData.at[q, 'name']=series_name
+    # resultData.at[q,'datapoints']=datapoints
+    # resultData.at[q, 'future_predictions']=future_predictions
    
     # Движеща се средна
     average = MovingAveragePredictionMethod(row, datapoints, window=3)
@@ -94,8 +94,8 @@ for q in range (260, 270):
     plt.plot(prediction, color="orange", label="Moving average 3, MAPE=%s, wMAPE=%s" % (average.computeMAPE(), average.computeWMAPE()))
     plt.legend()
 
-    resultData.at[q, 'ma_mape']=average.computeMAPE()
-    resultData.at[q, 'ma_wmape']=average.computeWMAPE()
+    # resultData.at[q, 'ma_mape']=average.computeMAPE()
+    # resultData.at[q, 'ma_wmape']=average.computeWMAPE()
 
     average.save("results/"+series_name+"/mav.json")
 
@@ -132,20 +132,20 @@ for q in range (260, 270):
                holtwinters.hwresults.params['smoothing_seasonal'], holtwinters.computeMAPE(), holtwinters.computeWMAPE()))
     plt.legend()
 
-    resultData.at[q, 'holtwinters_mape']=holtwinters.computeMAPE()
-    resultData.at[q, 'holtwinters_wmape']=holtwinters.computeWMAPE()
+    # resultData.at[q, 'holtwinters_mape']=holtwinters.computeMAPE()
+    # resultData.at[q, 'holtwinters_wmape']=holtwinters.computeWMAPE()
 
 
     # Проста RNN
-    simpleRNN = SimpleRNNPredictionMethodFix(row, datapoints, window=2)
+    simpleRNN = SimpleRNNPredictionMethod(row, datapoints, window=2)
     prediction = simpleRNN.predict()
     simpleRNN.save("results/"+series_name+"/srnn.json")
     simpleRNN.saveModel("results/"+series_name+"/srnn.keras")
     plt.plot(prediction, color="green", label="Simple RNN, MAPE=%s, wMAPE=%s" % (simpleRNN.computeMAPE(), simpleRNN.computeWMAPE()))
     plt.legend()
     
-    resultData.at[q, 'simplernn_mape']=simpleRNN.computeMAPE()
-    resultData.at[q, 'simplernn_wmape']=simpleRNN.computeWMAPE()
+    # resultData.at[q, 'simplernn_mape']=simpleRNN.computeMAPE()
+    # resultData.at[q, 'simplernn_wmape']=simpleRNN.computeWMAPE()
     
     # Проста LSTM
     # simpleLSTM = SimpleLSTMPredictionMethod(row, datapoints)
@@ -205,5 +205,5 @@ for q in range (260, 270):
     # pdf.savefig(fig)
 
 
-pdf.close()
-resultData.to_csv('results/data.csv')
+#pdf.close()
+#resultData.to_csv('results/data.csv')
