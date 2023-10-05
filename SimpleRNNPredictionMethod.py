@@ -25,11 +25,12 @@ class SimpleRNNPredictionMethod(NeuralNetworkPredictionMethod):
         params = {}
         params['extended_name']="Simple Recurrent Neural Network"
         params['layers']=self.layer_description
+        params['window']=self.window
         return params       
      
     def constructModel(self):
         if self.numNeurons[0] == None: 
-           rnn1NeuronCount = self.numAllPoints * 2
+           rnn1NeuronCount = round(self.numAllPoints / 2)
            model = Sequential()
            model.add(SimpleRNN(rnn1NeuronCount, input_shape=(self.window,1), activation='tanh'))
            model.add(Dense(units=self.numTestPoints, activation='tanh'))
@@ -89,7 +90,7 @@ class SimpleRNNPredictionMethod(NeuralNetworkPredictionMethod):
         batchedOutTestData = batchedOutData[:-1]
         
         self.model = self.constructModel()
-        self.model.fit(x=batchedTrainInData, y=batchedOutTrainData, epochs=2000, use_multiprocessing=True)
+        self.model.fit(x=batchedTrainInData, y=batchedOutTrainData, epochs=1000, use_multiprocessing=True)
        
         predictionBase = batchedInData[:-self.numTestPoints]
         #print("predictionBase dimensions\n", predictionBase.shape)

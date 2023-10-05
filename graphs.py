@@ -11,6 +11,7 @@ from MovingAveragePredictionMethod import MovingAveragePredictionMethod
 from ExponentialPredictionMethod import ExponentialPredictionMethod
 from DoubleExponentialPredictionMethod import DoubleExponentialPredictionMethod
 from TripleExponentialPredictionMethod import TripleExponentialPredictionMethod
+from SimpleRNNEnsemblePredictionMethod import SimpleRNNEnsemblePredictionMethod
 from SimpleRNNPredictionMethod import SimpleRNNPredictionMethod
 from SimpleLSTMPredictionMethod import SimpleLSTMPredictionMethod
 from CombinedRNNPredictionMethod import CombinedRNNPredictionMethod
@@ -136,12 +137,21 @@ for q in range (0, len(data)):
     # resultData.at[q, 'holtwinters_wmape']=holtwinters.computeWMAPE()
 
 
-    # Проста RNN
-    simpleRNN = SimpleRNNPredictionMethod(row, datapoints, window=2)
+    # Проста RNN Ensemble
+    simpleRNNEnsemble = SimpleRNNEnsemblePredictionMethod(row, datapoints, window=3)
+    prediction = simpleRNNEnsemble.predict()
+    simpleRNNEnsemble.save("results/"+series_name+"/srnn_ensemble.json")
+    simpleRNNEnsemble.saveModel("results/"+series_name+"/srnn_ensemble", "keras")
+    plt.plot(prediction, color="green", label="Simple RNN Ensemble, MAPE=%s, wMAPE=%s" % (simpleRNNEnsemble.computeMAPE(), simpleRNNEnsemble.computeWMAPE()))
+    plt.legend()
+    
+    
+    # Проста RNN 
+    simpleRNN = SimpleRNNPredictionMethod(row, datapoints, window=3)
     prediction = simpleRNN.predict()
     simpleRNN.save("results/"+series_name+"/srnn.json")
     simpleRNN.saveModel("results/"+series_name+"/srnn.keras")
-    plt.plot(prediction, color="green", label="Simple RNN, MAPE=%s, wMAPE=%s" % (simpleRNN.computeMAPE(), simpleRNN.computeWMAPE()))
+    plt.plot(prediction, color="brown", label="Simple RNN, MAPE=%s, wMAPE=%s" % (simpleRNN.computeMAPE(), simpleRNN.computeWMAPE()))
     plt.legend()
     
     # resultData.at[q, 'simplernn_mape']=simpleRNN.computeMAPE()
