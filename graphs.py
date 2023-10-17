@@ -14,6 +14,7 @@ from TripleExponentialPredictionMethod import TripleExponentialPredictionMethod
 from SimpleRNNEnsemblePredictionMethod import SimpleRNNEnsemblePredictionMethod
 from SimpleRNNPredictionMethod import SimpleRNNPredictionMethod
 from SimpleLSTMPredictionMethod import SimpleLSTMPredictionMethod
+from SimpleLSTMEnsemblePredictionMethod import SimpleLSTMEnsemblePredictionMethod
 from CombinedRNNPredictionMethod import CombinedRNNPredictionMethod
 from AveragedRNNExponentialPredictionMethod import AveragedRNNExponentialPredictionMethod
 from FeedForwardPredictionMethod import FeedForwardPredictionMethod
@@ -52,6 +53,9 @@ for q in range (0, len(data)):
     
     # Брой сезони, 1 - ако няма сезонност
     seasonality = data.iloc[rowno, 2]
+
+    if(seasonality<=1):
+        continue;
     
     # future_predictions ще съдържа броя на периодите в бъдещето, които 
     # трябва да прогнозираме
@@ -72,7 +76,9 @@ for q in range (0, len(data)):
 
     # Проверяваме дали вече не сме го правили 
     if os.path.isdir("results/"+series_name):
-        continue
+        if (os.path.exists("results/"+series_name+"/fig2.png")):
+            continue
+        #continue
     else:
         os.mkdir("results/"+series_name)
 
@@ -98,7 +104,7 @@ for q in range (0, len(data)):
     # resultData.at[q, 'ma_mape']=average.computeMAPE()
     # resultData.at[q, 'ma_wmape']=average.computeWMAPE()
 
-    average.save("results/"+series_name+"/mav.json")
+    # average.save("results/"+series_name+"/mav.json")
 
     # # Просто експоненциално изглаждане
     # exponential = ExponentialPredictionMethod(row, datapoints)
@@ -127,10 +133,10 @@ for q in range (0, len(data)):
     else:
         holtwinters = DoubleExponentialPredictionMethod(row, datapoints)
     prediction = holtwinters.predict()
-    holtwinters.save("results/"+series_name+"/hw.json")
+    # holtwinters.save("results/"+series_name+"/hw.json")
     plt.plot(prediction, color="red", label="Exp. smoothing $\\alpha=%s$, $\\beta=%s$ $\\gamma=%s$, MAPE=%s, wMAPE=%s" % 
               (holtwinters.hwresults.params['smoothing_level'], holtwinters.hwresults.params['smoothing_trend'], 
-               holtwinters.hwresults.params['smoothing_seasonal'], holtwinters.computeMAPE(), holtwinters.computeWMAPE()))
+                holtwinters.hwresults.params['smoothing_seasonal'], holtwinters.computeMAPE(), holtwinters.computeWMAPE()))
     plt.legend()
 
     # resultData.at[q, 'holtwinters_mape']=holtwinters.computeMAPE()
@@ -138,27 +144,27 @@ for q in range (0, len(data)):
 
 
     # Проста RNN Ensemble
-    simpleRNNEnsemble = SimpleRNNEnsemblePredictionMethod(row, datapoints, window=3)
-    prediction = simpleRNNEnsemble.predict()
-    simpleRNNEnsemble.save("results/"+series_name+"/srnn_ensemble.json")
-    simpleRNNEnsemble.saveModel("results/"+series_name+"/srnn_ensemble", "keras")
-    plt.plot(prediction, color="green", label="Simple RNN Ensemble, MAPE=%s, wMAPE=%s" % (simpleRNNEnsemble.computeMAPE(), simpleRNNEnsemble.computeWMAPE()))
-    plt.legend()
+    # simpleRNNEnsemble = SimpleRNNEnsemblePredictionMethod(row, datapoints, window=3)
+    # prediction = simpleRNNEnsemble.predict()
+    # simpleRNNEnsemble.save("results/"+series_name+"/srnn_ensemble.json")
+    # simpleRNNEnsemble.saveModel("results/"+series_name+"/srnn_ensemble", "keras")
+    # plt.plot(prediction, color="green", label="Simple RNN Ensemble, MAPE=%s, wMAPE=%s" % (simpleRNNEnsemble.computeMAPE(), simpleRNNEnsemble.computeWMAPE()))
+    # plt.legend()
     
     
-    # Проста RNN 
-    simpleRNN = SimpleRNNPredictionMethod(row, datapoints, window=3)
-    prediction = simpleRNN.predict()
-    simpleRNN.save("results/"+series_name+"/srnn.json")
-    simpleRNN.saveModel("results/"+series_name+"/srnn.keras")
-    plt.plot(prediction, color="brown", label="Simple RNN, MAPE=%s, wMAPE=%s" % (simpleRNN.computeMAPE(), simpleRNN.computeWMAPE()))
-    plt.legend()
+    # # Проста RNN 
+    # simpleRNN = SimpleRNNPredictionMethod(row, datapoints, window=3)
+    # prediction = simpleRNN.predict()
+    # simpleRNN.save("results/"+series_name+"/srnn.json")
+    # simpleRNN.saveModel("results/"+series_name+"/srnn.keras")
+    # plt.plot(prediction, color="brown", label="Simple RNN, MAPE=%s, wMAPE=%s" % (simpleRNN.computeMAPE(), simpleRNN.computeWMAPE()))
+    # plt.legend()
     
     # resultData.at[q, 'simplernn_mape']=simpleRNN.computeMAPE()
     # resultData.at[q, 'simplernn_wmape']=simpleRNN.computeWMAPE()
     
     # Проста LSTM
-    # simpleLSTM = SimpleLSTMPredictionMethod(row, datapoints)
+    # simpleLSTM = SimpleLSTMPredictionMethod(row, datapoints, window=3)
     # prediction = simpleLSTM.predict()
     # simpleLSTM.save("results/"+series_name+"/slstm.json")
     # simpleLSTM.saveModel("results/"+series_name+"/slstm.keras")
@@ -167,6 +173,21 @@ for q in range (0, len(data)):
     
     # resultData.at[q, 'simplelstm_mape']=simpleLSTM.computeMAPE()
     # resultData.at[q, 'simplelstm_wmape']=simpleLSTM.computeWMAPE()
+
+    # Проста LSTM Ensemble
+    simpleLSTMEnsemble = SimpleLSTMEnsemblePredictionMethod(row, datapoints, window=3)
+    prediction = simpleLSTMEnsemble.predict()
+    simpleLSTMEnsemble.save("results/"+series_name+"/slstm_ensemble_w3.json")
+    simpleLSTMEnsemble.saveModel("results/"+series_name+"/slstm_ensemble_w3", "keras")
+    plt.plot(prediction, color="brown", label="Simple LSTM Ensemble (window=3), MAPE=%s, wMAPE=%s" % (simpleLSTMEnsemble.computeMAPE(), simpleLSTMEnsemble.computeWMAPE()))
+    plt.legend()
+    
+    simpleLSTMEnsemble = SimpleLSTMEnsemblePredictionMethod(row, datapoints, window=6)
+    prediction = simpleLSTMEnsemble.predict()
+    simpleLSTMEnsemble.save("results/"+series_name+"/slstm_ensemble_w6.json")
+    simpleLSTMEnsemble.saveModel("results/"+series_name+"/slstm_ensemble_w6", "keras")
+    plt.plot(prediction, color="green", label="Simple LSTM Ensemble (window=6), MAPE=%s, wMAPE=%s" % (simpleLSTMEnsemble.computeMAPE(), simpleLSTMEnsemble.computeWMAPE()))
+    plt.legend()
 
     # Комбиниран RNN
     # combinedRNN = CombinedRNNPredictionMethod(row, datapoints, numSeasons=seasonality)
@@ -211,7 +232,7 @@ for q in range (0, len(data)):
     # resultData.at[q, 'boxcox_rnn_mape']=boxcoxRNN.computeMAPE()
     # resultData.at[q, 'boxcox_rnn_wmape']=boxcoxRNN.computeWMAPE()   
 
-    plt.savefig("results/"+series_name+"/fig.png")
+    plt.savefig("results/"+series_name+"/fig1.png")
     # pdf.savefig(fig)
 
 
